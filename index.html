@@ -48,8 +48,8 @@ textarea{min-height:110px}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 // ===== ISI BAGIAN INI =====
-var SUPABASE_URL = "https://unidbezguipmnyqyefct.supabase.co";
-var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVuaWRiZXpndWlwbW55cXllZmN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUwMzcwODYsImV4cCI6MjExMDYxMzA4Nn0.r3wHNUmnGTNsO3loGYgcFNyePHHTIkY88X5D_aHF8TU";
+var SUPABASE_URL = "https://XXXX.supabase.co";
+var SUPABASE_ANON_KEY = "ISI_ANON_KEY";
 var EVENT = {
   org: "Persekutuan Doa Elsewedy Electric Indonesia",
   title: "Perayaan Natal 2026",
@@ -64,7 +64,7 @@ var $ = function(id){ return document.getElementById(id); };
 var esc = function(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); };
 var slugify = function(n){ return n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""); };
 var niceName = function(s){ return s.split("-").filter(Boolean).map(function(w){ return w.charAt(0).toUpperCase()+w.slice(1); }).join(" "); };
-var sb = null, H = {rows:[], tab:"undangan", scanner:null, last:null, poll:null};
+var sb = null, H = {rows:[], tamu:[], tab:"undangan", scanner:null, last:null, poll:null};
 try{ sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }catch(e){}
 
 function route(){
@@ -106,12 +106,12 @@ function gate(){
 
 // ===== Data =====
 function load(){
-  return sb.from("hadir").select("*").order("at").then(function(r){
-    if(r.error){ var n=$("dbnote"); if(n) n.textContent="Gagal memuat data: "+r.error.message; return; }
-    H.rows = r.data || []; refresh();
+  return Promise.all([sb.from("hadir").select("*").order("at"), sb.from("tamu").select("*").order("created_at")]).then(function(rs){
+    if(rs[0].error || rs[1].error){ var n=$("dbnote"); if(n) n.textContent="Gagal memuat data: "+(rs[0].error||rs[1].error).message; return; }
+    H.rows = rs[0].data || []; H.tamu = rs[1].data || []; refresh();
   });
 }
-function refresh(){ if(H.tab==="scan") stats(); else if(H.tab==="doorprize" && !H.busy) tabDoor(); else if(H.tab==="kado" && !H.busy) tabKado(); }
+function refresh(){ if(H.tab==="scan") stats(); else if(H.tab==="undangan") renderTamu(); else if(H.tab==="doorprize" && !H.busy) tabDoor(); else if(H.tab==="kado" && !H.busy) tabKado(); }
 function stats(){
   var el = $("stats"); if(!el) return;
   el.innerHTML = '<div><b>'+H.rows.length+'</b>hadir</div><div><b>'+H.rows.filter(function(x){return x.gift;}).length+'</b>bawa kado</div><div><b>'+H.rows.filter(function(x){return x.won;}).length+'</b>menang</div>';
@@ -129,26 +129,67 @@ function panel(){
   load(); H.poll = setInterval(load, 5000);
 }
 
+// ===== Daftar tamu & kirim WhatsApp (Fonnte) =====
+var TPL = function(){ return "Shalom {name},\n\nDengan sukacita kami mengundang Anda untuk hadir dalam *"+EVENT.title+"* "+EVENT.org+":\n\n📅 "+EVENT.date+"\n🕐 "+EVENT.time+"\n📍 "+EVENT.place+"\n\nAcara ini dilengkapi:\n🎁 Undian doorprize (otomatis untuk semua yang hadir)\n🎄 Tukar kado (bagi yang membawa kado)\n\nBuka undangan dan QR absen Anda di sini:\n{var1}\n\nMohon tunjukkan QR tersebut kepada panitia saat tiba. Kami menantikan kehadiran Anda. Tuhan memberkati. 🙏"; };
+var msgFor = function(n, link){ return TPL().replace("{name}", n).replace("{var1}", link); };
+var normPhone = function(p){ p = String(p||"").replace(/\D/g,""); if(!p) return ""; if(p.indexOf("62")===0) return "0"+p.slice(2); return p.charAt(0)==="0" ? p : "0"+p; };
+var linkFor = function(slug){ return location.origin+location.pathname+"#"+slug; };
+
 function tabUndangan(){
   $("body").innerHTML =
-   '<div class="card sans"><b>Buat undangan 1-1</b><div class="mute">Satu nama per baris. Tiap nama dapat link & QR sendiri.</div>'+
-   '<div class="row"><input id="base" value="'+esc(location.origin+location.pathname)+'"></div>'+
-   '<textarea id="names" placeholder="Budi Santoso&#10;Maria Dewi"></textarea>'+
-   '<div class="row"><button class="pri" id="gen">Buat link undangan</button></div><div id="o"></div></div>';
-  $("gen").onclick = function(){
-    var seen = {}, base = $("base").value.split("#")[0], rows = [];
-    $("names").value.split("\n").forEach(function(n){
-      n = n.trim(); if(!n) return;
-      var s = slugify(n) || "tamu", k = s, i = 2;
-      while(seen[k]) k = s+"-"+(i++);
-      seen[k] = 1; rows.push({n:n, link: base+"#"+k});
-    });
-    $("o").innerHTML = rows.map(function(r,i){
-      var wa = "https://wa.me/?text="+encodeURIComponent("Shalom "+r.n+", kami mengundang Anda ke "+EVENT.title+" "+EVENT.org+". Undangan & QR absen Anda: "+r.link);
-      return '<div class="item"><span>'+esc(r.n)+'</span><span class="btns"><button data-c="'+i+'">Salin</button><a href="'+wa+'" target="_blank" rel="noopener"><button>WA</button></a></span></div>';
-    }).join("") || '<div class="mute">Belum ada nama.</div>';
-    $("o").onclick = function(e){ var c = e.target.dataset.c; if(c!==undefined){ var t = rows[c].link; (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){ e.target.textContent="✓"; }).catch(function(){ prompt("Salin link:", t); }); } };
+   '<div class="card sans"><b>Tambah tamu</b><div class="mute">Satu per baris: <code>Nama, 08xxxxxxxxxx</code> (nomor boleh dikosongkan). Nama yang sama memperbarui nomornya.</div>'+
+   '<textarea id="names" placeholder="Budi Santoso, 081234567890&#10;Maria Dewi, 082233445566"></textarea>'+
+   '<div class="row"><button class="pri" id="gen">Simpan ke daftar</button></div><div id="gmsg" class="mute"></div></div>'+
+   '<div class="card sans"><b>Kirim via Fonnte</b><div class="mute">Dikirim berurutan oleh server Fonnte dengan jeda acak, jadi halaman ini boleh ditutup.</div>'+
+   '<div class="row"><input id="dmin" type="number" min="5" value="20"><input id="dmax" type="number" min="5" value="60"></div><div class="mute">Jeda acak antar pesan (detik): minimum dan maksimum</div>'+
+   '<div class="row"><button class="red" id="sendall">Kirim ke semua yang belum</button></div><div id="smsg" class="mute"></div></div>'+
+   '<div class="card sans"><b id="tcount">Daftar tamu</b><div id="tlist"></div></div>';
+  $("gen").onclick = saveTamu;
+  $("sendall").onclick = function(){ sendTamu(H.tamu.filter(function(t){ return t.phone && t.status!=="antri"; })); };
+  $("tlist").onclick = function(e){
+    var a = e.target.dataset.a, t = H.tamu[e.target.dataset.i]; if(!a || !t) return;
+    if(a==="c"){ var l = linkFor(t.id); (navigator.clipboard?navigator.clipboard.writeText(l):Promise.reject()).then(function(){ e.target.textContent="✓"; }).catch(function(){ prompt("Salin link:", l); }); }
+    if(a==="s") sendTamu([t]);
+    if(a==="d" && confirm("Hapus "+t.name+" dari daftar?")) sb.from("tamu").delete().eq("id", t.id).then(load);
   };
+  renderTamu();
+}
+function renderTamu(){
+  var el = $("tlist"); if(!el) return;
+  var hadir = {}; H.rows.forEach(function(r){ hadir[r.id] = 1; });
+  $("tcount").textContent = "Daftar tamu ("+H.tamu.length+")";
+  el.innerHTML = H.tamu.map(function(t,i){
+    var st = hadir[t.id] ? "✅ hadir" : t.status==="antri" ? "📤 masuk antrean Fonnte" : "belum dikirim";
+    return '<div class="item"><span>'+esc(t.name)+'<br><span class="mute">'+esc(t.phone||"tanpa nomor")+' · '+st+'</span></span><span class="btns"><button data-a="c" data-i="'+i+'">Salin</button><button data-a="s" data-i="'+i+'">Kirim</button><button data-a="d" data-i="'+i+'">✕</button></span></div>';
+  }).join("") || '<div class="mute">Belum ada tamu.</div>';
+}
+function saveTamu(){
+  var map = {};
+  $("names").value.split("\n").forEach(function(l){
+    l = l.trim(); if(!l) return;
+    var p = l.split(/[,\t;]/), name = p[0].trim(), id = slugify(name); if(!id) return;
+    var old = H.tamu.filter(function(x){ return x.id===id; })[0], phone = normPhone(p[1]);
+    map[id] = {id:id, name:name, phone: phone || (old && old.phone) || null};
+  });
+  var arr = Object.keys(map).map(function(k){ return map[k]; });
+  if(!arr.length){ $("gmsg").textContent = "Belum ada nama."; return; }
+  sb.from("tamu").upsert(arr).then(function(r){
+    if(r.error){ $("gmsg").textContent = "Gagal menyimpan: "+r.error.message; return; }
+    $("gmsg").textContent = arr.length+" tamu tersimpan."; $("names").value = ""; load();
+  });
+}
+function sendTamu(list){
+  var ok = list.filter(function(t){ return t.phone; }), msg = $("smsg");
+  if(!ok.length){ msg.textContent = "Tidak ada tamu bernomor yang perlu dikirim."; return; }
+  var mn = Math.max(5, parseInt($("dmin").value)||20), mx = Math.max(mn, parseInt($("dmax").value)||60);
+  if(!confirm("Kirim undangan ke "+ok.length+" tamu dengan jeda acak "+mn+"–"+mx+" detik?")) return;
+  msg.textContent = "Mengirim ke Fonnte…";
+  sb.functions.invoke("send-wa", {body:{message:TPL(), delay: mn+"-"+mx, targets: ok.map(function(t){ return {phone:t.phone, name:t.name, link:linkFor(t.id)}; })}}).then(function(r){
+    var d = r.data;
+    if(r.error || !d || d.status===false){ msg.textContent = "Gagal: "+((d && d.reason) || (r.error && r.error.message) || "tidak diketahui"); return; }
+    msg.textContent = ok.length+" pesan masuk antrean Fonnte. Perkiraan selesai ±"+Math.ceil(ok.length*(mn+mx)/2/60)+" menit.";
+    sb.from("tamu").update({status:"antri", sent_at:new Date().toISOString()}).in("id", ok.map(function(t){ return t.id; })).then(load);
+  });
 }
 
 function tabScan(){
