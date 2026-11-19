@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Undangan Natal Persekutuan Doa Elsewedy</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎄</text></svg>">
+<style>
+:root{--bg:#f7f3ec;--card:#fff;--ink:#1f2a24;--mute:#6b756e;--accent:#b3212b;--green:#1f6b45;--line:#e3dccd;--gold:#c8922b;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#141a16;--card:#1d2621;--ink:#f1ece0;--mute:#9aa59d;--accent:#e0545d;--green:#4fb583;--line:#2f3b34;--gold:#e0b050;color-scheme:dark}}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Georgia,"Times New Roman",serif;line-height:1.5}
+.wrap{max-width:520px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:14px}
+h1,h2{margin:0 0 6px}
+.sans,button,input,textarea{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.inv{text-align:center;border:2px solid var(--gold)}
+.inv .tag{letter-spacing:.2em;font-size:12px;color:var(--accent);text-transform:uppercase}
+.inv h1{font-size:28px;color:var(--green);margin:8px 0}
+.inv .to{font-size:13px;color:var(--mute);margin-top:18px}
+.inv .name{font-size:26px;margin:2px 0 14px}
+#qr{display:inline-block;background:#fff;padding:12px;border-radius:12px}
+#qr img,#qr canvas{display:block}
+.code{font-family:ui-monospace,monospace;font-size:13px;color:var(--mute);margin-top:6px}
+ul.how{text-align:left;font-size:14px;padding-left:18px;color:var(--mute)}
+.tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto}.tabs button{flex:1;white-space:nowrap}
+button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px 14px;border-radius:10px;font-size:14px;cursor:pointer}
+button.on,button.pri{background:var(--green);color:#fff;border-color:var(--green)}
+button.red{background:var(--accent);color:#fff;border-color:var(--accent)}
+button:disabled{opacity:.5}
+input,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-size:15px}
+textarea{min-height:110px}
+.row{display:flex;gap:8px;align-items:center;margin:8px 0;flex-wrap:wrap}.row>*{flex:1}
+.item{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.item:last-child{border:0}.item .btns{display:flex;gap:6px;flex:none}.item button{padding:6px 10px;font-size:13px}
+.mute{color:var(--mute);font-size:13px}
+.big{font-size:30px;text-align:center;color:var(--accent);margin:14px 0}
+.stat{display:flex;gap:8px}.stat div{flex:1;text-align:center;background:var(--bg);border-radius:10px;padding:8px}.stat b{display:block;font-size:22px}
+#reader{width:100%;border-radius:12px;overflow:hidden}
+.res{padding:12px;border-radius:12px;background:var(--bg);margin-top:10px;font-family:system-ui,sans-serif}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+// ===== ISI BAGIAN INI =====
+var SUPABASE_URL = "https://XXXX.supabase.co";
+var SUPABASE_ANON_KEY = "ISI_ANON_KEY";
+var EVENT = {
+  org: "Persekutuan Doa Elsewedy Electric Indonesia",
+  title: "Perayaan Natal 2026",
+  date: "Jumat, 18 Desember 2026",
+  time: "Pukul 17.00 WIB",
+  place: "Ruang Salak",
+  verse: "“Sebab bagi kita telah lahir seorang anak, kepada kita telah diberikan seorang putra.” — Yesaya 9:6"
+};
+// ==========================
+var app = document.getElementById("app");
+var $ = function(id){ return document.getElementById(id); };
+var esc = function(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); };
+var slugify = function(n){ return n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""); };
+var niceName = function(s){ return s.split("-").filter(Boolean).map(function(w){ return w.charAt(0).toUpperCase()+w.slice(1); }).join(" "); };
+var sb = null, H = {rows:[], tab:"undangan", scanner:null, last:null, poll:null};
+try{ sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }catch(e){}
+
+function route(){
+  stopScan(); clearInterval(H.poll);
+  var h = decodeURIComponent(location.hash.replace("#",""));
+  if(!h || h === "panitia") return gate();
+  invitation(h);
+}
+window.addEventListener("hashchange", route);
+
+function invitation(slug){
+  app.innerHTML =
+   '<div class="card inv"><div class="tag">Undangan</div><h1>'+esc(EVENT.title)+'</h1><div>'+esc(EVENT.org)+'</div>'+
+   '<p style="font-style:italic;font-size:14px;color:var(--mute)">'+esc(EVENT.verse)+'</p>'+
+   '<div class="to">Kepada Yth.</div><div class="name">'+esc(niceName(slug))+'</div>'+
+   '<div class="sans" style="font-size:14px">📅 '+esc(EVENT.date)+'<br>🕐 '+esc(EVENT.time)+'<br>📍 '+esc(EVENT.place)+'</div>'+
+   '<div style="margin-top:18px"><div id="qr"></div><div class="code">'+esc(slug)+'</div></div></div>'+
+   '<div class="card sans"><b>Cara hadir</b><ul class="how">'+
+   '<li>Tunjukkan QR di atas kepada panitia saat tiba (screenshot juga boleh).</li>'+
+   '<li>Setelah di-scan, Anda otomatis masuk daftar hadir dan undian doorprize.</li>'+
+   '<li>Membawa kado? Beri tahu panitia saat scan untuk ikut tukar kado.</li></ul></div>';
+  new QRCode($("qr"), {text: slug, width: 200, height: 200});
+}
+
+// ===== Login panitia =====
+function gate(){
+  if(!sb){ app.innerHTML = '<div class="card sans">Isi SUPABASE_URL dan SUPABASE_ANON_KEY di index.html.</div>'; return; }
+  sb.auth.getSession().then(function(r){
+    if(r.data.session) return panel();
+    app.innerHTML = '<div class="card sans"><h2>🎄 Login Panitia</h2><div class="row"><input id="em" type="email" placeholder="Email"></div>'+
+     '<div class="row"><input id="pw" type="password" placeholder="Password"></div><div class="row"><button class="pri" id="login">Masuk</button></div><div id="err" class="mute"></div></div>';
+    $("login").onclick = function(){
+      sb.auth.signInWithPassword({email:$("em").value.trim(), password:$("pw").value}).then(function(r){
+        if(r.error) $("err").textContent = "Login gagal: "+r.error.message; else panel();
+      });
+    };
+  });
+}
+
+// ===== Data =====
+function load(){
+  return sb.from("hadir").select("*").order("at").then(function(r){
+    if(r.error){ var n=$("dbnote"); if(n) n.textContent="Gagal memuat data: "+r.error.message; return; }
+    H.rows = r.data || []; refresh();
+  });
+}
+function refresh(){ if(H.tab==="scan") stats(); else if(H.tab==="doorprize" && !H.busy) tabDoor(); else if(H.tab==="kado" && !H.busy) tabKado(); }
+function stats(){
+  var el = $("stats"); if(!el) return;
+  el.innerHTML = '<div><b>'+H.rows.length+'</b>hadir</div><div><b>'+H.rows.filter(function(x){return x.gift;}).length+'</b>bawa kado</div><div><b>'+H.rows.filter(function(x){return x.won;}).length+'</b>menang</div>';
+}
+
+function panel(){
+  clearInterval(H.poll);
+  app.innerHTML = '<h2>🎄 Panel Panitia</h2><div class="mute sans" style="margin-bottom:10px">'+esc(EVENT.title)+' — '+esc(EVENT.org)+' · <a href="#" id="out" style="color:var(--accent)">keluar</a></div>'+
+   '<div class="tabs sans" id="tabs"></div><div id="body"></div>';
+  $("out").onclick = function(e){ e.preventDefault(); sb.auth.signOut().then(gate); };
+  var tabs = [["undangan","Undangan"],["scan","Scan"],["doorprize","Doorprize"],["kado","Kado"]];
+  $("tabs").innerHTML = tabs.map(function(t){ return '<button data-t="'+t[0]+'" class="'+(H.tab===t[0]?"on":"")+'">'+t[1]+'</button>'; }).join("");
+  $("tabs").onclick = function(e){ var t = e.target.dataset.t; if(t){ stopScan(); H.tab = t; panel(); } };
+  ({undangan:tabUndangan, scan:tabScan, doorprize:tabDoor, kado:tabKado})[H.tab]();
+  load(); H.poll = setInterval(load, 5000);
+}
+
+function tabUndangan(){
+  $("body").innerHTML =
+   '<div class="card sans"><b>Buat undangan 1-1</b><div class="mute">Satu nama per baris. Tiap nama dapat link & QR sendiri.</div>'+
+   '<div class="row"><input id="base" value="'+esc(location.origin+location.pathname)+'"></div>'+
+   '<textarea id="names" placeholder="Budi Santoso&#10;Maria Dewi"></textarea>'+
+   '<div class="row"><button class="pri" id="gen">Buat link undangan</button></div><div id="o"></div></div>';
+  $("gen").onclick = function(){
+    var seen = {}, base = $("base").value.split("#")[0], rows = [];
+    $("names").value.split("\n").forEach(function(n){
+      n = n.trim(); if(!n) return;
+      var s = slugify(n) || "tamu", k = s, i = 2;
+      while(seen[k]) k = s+"-"+(i++);
+      seen[k] = 1; rows.push({n:n, link: base+"#"+k});
+    });
+    $("o").innerHTML = rows.map(function(r,i){
+      var wa = "https://wa.me/?text="+encodeURIComponent("Shalom "+r.n+", kami mengundang Anda ke "+EVENT.title+" "+EVENT.org+". Undangan & QR absen Anda: "+r.link);
+      return '<div class="item"><span>'+esc(r.n)+'</span><span class="btns"><button data-c="'+i+'">Salin</button><a href="'+wa+'" target="_blank" rel="noopener"><button>WA</button></a></span></div>';
+    }).join("") || '<div class="mute">Belum ada nama.</div>';
+    $("o").onclick = function(e){ var c = e.target.dataset.c; if(c!==undefined){ var t = rows[c].link; (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){ e.target.textContent="✓"; }).catch(function(){ prompt("Salin link:", t); }); } };
+  };
+}
+
+function tabScan(){
+  $("body").innerHTML =
+   '<div class="stat card sans" id="stats"></div><div class="card sans"><div id="dbnote" class="mute"></div><div id="reader"></div>'+
+   '<div class="row"><button class="pri" id="start">Mulai kamera</button><button id="stop" class="hide">Stop</button></div>'+
+   '<div class="row"><input id="man" placeholder="Kode manual / nama tamu (jalan masuk)"><button id="go" style="flex:none">Cek-in</button></div><div id="res"></div></div>';
+  stats();
+  $("start").onclick = startScan; $("stop").onclick = stopScan;
+  $("go").onclick = function(){ var v = slugify($("man").value); if(v) checkin(v); $("man").value=""; };
+}
+function startScan(){
+  try{
+    H.scanner = new Html5Qrcode("reader");
+    H.scanner.start({facingMode:"environment"},{fps:10,qrbox:220},function(txt){
+      if(H.last === txt) return; H.last = txt; setTimeout(function(){ H.last=null; }, 3000);
+      checkin(slugify(txt.split("#").pop()));
+    }).then(function(){ $("start").classList.add("hide"); $("stop").classList.remove("hide"); })
+      .catch(function(){ $("res").innerHTML = '<div class="res">Kamera tidak bisa dibuka (butuh HTTPS & izin kamera). Pakai input manual.</div>'; });
+  }catch(e){}
+}
+function stopScan(){ if(H.scanner){ var s = H.scanner; H.scanner = null; try{ s.stop().then(function(){ s.clear(); }).catch(function(){}); }catch(e){} } }
+
+function checkin(slug){
+  if(!slug) return;
+  var ex = H.rows.filter(function(x){return x.id===slug;})[0];
+  if(ex) return showRes(ex, true);
+  sb.from("hadir").insert({id:slug, name:niceName(slug)}).select().single().then(function(r){
+    if(r.error){ $("res").innerHTML = '<div class="res">Gagal: '+esc(r.error.message)+'</div>'; return; }
+    H.rows.push(r.data); stats(); showRes(r.data, false);
+  });
+}
+function showRes(rec, dup){
+  $("res").innerHTML = '<div class="res"><b>'+(dup?"⚠️ Sudah check-in":"✅ Hadir")+':</b> '+esc(rec.name)+
+   '<div class="mute" id="gs">'+(rec.gift?"Kado No. "+rec.gift_no:"Otomatis masuk undian doorprize.")+'</div>'+
+   (rec.gift?'':'<div class="row"><button class="pri" id="gift">🎁 Bawa kado</button></div>')+'</div>';
+  var g = $("gift"); if(g) g.onclick = function(){
+    var no = H.rows.reduce(function(m,x){return Math.max(m, x.gift_no||0);},0)+1;
+    sb.from("hadir").update({gift:true, gift_no:no}).eq("id", rec.id).then(function(r){
+      if(r.error) return;
+      rec.gift = true; rec.gift_no = no; stats(); $("gs").textContent = "Kado No. "+no+" — tempel nomor ini pada kado."; g.remove();
+    });
+  };
+}
+
+function tabDoor(){
+  var pool = H.rows.filter(function(x){return !x.won;}), won = H.rows.filter(function(x){return x.won;}).sort(function(a,b){return a.won-b.won;});
+  $("body").innerHTML =
+   '<div class="card sans"><div class="mute">Hadir & belum menang: <b>'+pool.length+'</b></div><div class="big" id="pick">🎁</div>'+
+   '<div class="row"><button class="red" id="draw"'+(pool.length?"":" disabled")+'>Undi pemenang</button></div></div>'+
+   '<div class="card sans"><b>Pemenang</b>'+(won.map(function(x){ return '<div class="item"><span>#'+x.won+' '+esc(x.name)+'</span></div>'; }).join("")||'<div class="mute">Belum ada.</div>')+'</div>';
+  $("draw").onclick = function(){
+    H.busy = true; $("draw").disabled = true; var n = 0;
+    var t = setInterval(function(){
+      $("pick").textContent = pool[Math.floor(Math.random()*pool.length)].name;
+      if(++n > 18){ clearInterval(t);
+        var w = pool[Math.floor(Math.random()*pool.length)]; $("pick").textContent = "🎉 "+w.name;
+        sb.from("hadir").update({won: won.length+1}).eq("id", w.id).then(function(){ setTimeout(function(){ H.busy=false; load(); }, 4000); });
+      }
+    }, 90);
+  };
+}
+
+function tabKado(){
+  var gifts = H.rows.filter(function(x){return x.gift;}).sort(function(a,b){return a.gift_no-b.gift_no;});
+  var done = gifts.length && gifts.every(function(x){return x.get_no;});
+  $("body").innerHTML =
+   '<div class="card sans"><b>Tukar kado</b><div class="mute">Pembawa kado: '+gifts.length+'. Tiap orang mendapat kado orang lain secara acak.</div>'+
+   '<div class="row"><button class="red" id="mix"'+(gifts.length<2?" disabled":"")+'>'+(done?"Acak ulang":"Acak pembagian kado")+'</button></div>'+
+   gifts.map(function(x){ return '<div class="item"><span>'+esc(x.name)+' <span class="mute">(kado No. '+x.gift_no+')</span></span><b>'+(x.get_no?"→ No. "+x.get_no:"")+'</b></div>'; }).join("")+'</div>';
+  $("mix").onclick = function(){
+    var r = gifts.slice().sort(function(){ return Math.random()-.5; }); $("mix").disabled = true;
+    Promise.all(r.map(function(x,i){ return sb.from("hadir").update({get_no: r[(i+1)%r.length].gift_no}).eq("id", x.id); })).then(load);
+  };
+}
+route();
+</script>
+</body>
+</html>
