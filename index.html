@@ -239,6 +239,49 @@ ul.how{text-align:left;font-size:13.5px;padding-left:18px;margin:0;color:var(--m
 ul.how li{margin-bottom:5px}
 ul.how li:last-child{margin-bottom:0}
 
+/* Spin Wheel */
+.wheel-box{
+  position:relative;
+  width:310px;
+  height:310px;
+  margin:14px auto 10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.wheel-ptr{
+  position:absolute;
+  top:-8px;
+  left:50%;
+  transform:translateX(-50%);
+  width:0;height:0;
+  border-left:14px solid transparent;
+  border-right:14px solid transparent;
+  border-top:26px solid var(--accent);
+  filter:drop-shadow(0 3px 4px rgba(0,0,0,0.35));
+  z-index:5;
+}
+#wheel{
+  width:300px;
+  height:300px;
+  border-radius:50%;
+  border:5px solid var(--gold);
+  box-shadow:0 8px 24px rgba(0,0,0,0.18);
+  display:block;
+}
+
+/* Spotlight Tukar Kado 1-1 */
+.stage{
+  text-align:center;
+  background:var(--gold-light);
+  border:2px dashed var(--gold);
+  border-radius:14px;
+  padding:18px 14px;
+  margin:12px 0;
+}
+.stage-name{font-size:24px;font-weight:700;color:var(--green);margin:4px 0}
+.stage-no{font-size:34px;font-weight:800;color:var(--accent);margin:8px 0}
+
 /* Panel Panitia & Kontrol */
 .tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto}.tabs button{flex:1;white-space:nowrap}
 button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px 14px;border-radius:10px;font-size:14px;cursor:pointer;transition:transform .1s}
@@ -252,7 +295,7 @@ textarea{min-height:110px}
 .item{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
 .item:last-child{border:0}.item .btns{display:flex;gap:6px;flex:none}.item button{padding:6px 10px;font-size:13px}
 .mute{color:var(--mute);font-size:13px}
-.big{font-size:30px;text-align:center;color:var(--accent);margin:14px 0;font-weight:700}
+.big{font-size:26px;text-align:center;color:var(--accent);margin:10px 0;font-weight:700;min-height:36px}
 .stat{display:flex;gap:8px}.stat div{flex:1;text-align:center;background:var(--bg);border-radius:10px;padding:8px}.stat b{display:block;font-size:22px;color:var(--green)}
 #reader{width:100%;border-radius:12px;overflow:hidden}
 .res{padding:12px;border-radius:12px;background:var(--bg);margin-top:10px;font-family:system-ui,sans-serif}
@@ -266,7 +309,7 @@ textarea{min-height:110px}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
-// ===== ISI BAGIAN INI =====
+// ===== KONFIGURASI =====
 var SUPABASE_URL = "https://unidbezguipmnyqyefct.supabase.co";
 var SUPABASE_ANON_KEY = "sb_publishable_s5RgopUgpyazva2qSyyptQ_pas6yMxl";
 var EVENT = {
@@ -277,13 +320,13 @@ var EVENT = {
   place: "Ruang Salak",
   verse: "“Sebab bagi kita telah lahir seorang anak, kepada kita telah diberikan seorang putra.” — Yesaya 9:6"
 };
-// ==========================
+// =======================
 var app = document.getElementById("app");
 var $ = function(id){ return document.getElementById(id); };
 var esc = function(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); };
 var slugify = function(n){ return n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""); };
 var niceName = function(s){ return s.split("-").filter(Boolean).map(function(w){ return w.charAt(0).toUpperCase()+w.slice(1); }).join(" "); };
-var sb = null, H = {rows:[], tamu:[], tab:"undangan", scanner:null, last:null, poll:null};
+var sb = null, H = {rows:[], tamu:[], tab:"undangan", scanner:null, last:null, poll:null, busy:false, angle:0, rev:{}, curKado:null, showAllKado:false};
 try{ sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }catch(e){}
 
 function setSnow(on){
@@ -376,7 +419,12 @@ function load(){
     H.rows = rs[0].data || []; H.tamu = rs[1].data || []; refresh();
   });
 }
-function refresh(){ if(H.tab==="scan") stats(); else if(H.tab==="undangan") renderTamu(); else if(H.tab==="doorprize" && !H.busy) tabDoor(); else if(H.tab==="kado" && !H.busy) tabKado(); }
+function refresh(){
+  if(H.tab==="scan") stats();
+  else if(H.tab==="undangan") renderTamu();
+  else if(H.tab==="doorprize" && !H.busy) tabDoor();
+  else if(H.tab==="kado" && !H.busy) tabKado();
+}
 function stats(){
   var el = $("stats"); if(!el) return;
   el.innerHTML = '<div><b>'+H.rows.length+'</b>hadir</div><div><b>'+H.rows.filter(function(x){return x.gift;}).length+'</b>bawa kado</div><div><b>'+H.rows.filter(function(x){return x.won;}).length+'</b>menang</div>';
@@ -395,7 +443,22 @@ function panel(){
 }
 
 // ===== Daftar tamu & kirim WhatsApp (Fonnte) =====
-var TPL = function(){ return "Shalom {name},\n\nDengan sukacita kami mengundang Anda untuk hadir dalam *"+EVENT.title+"* "+EVENT.org+":\n\n📅 "+EVENT.date+"\n🕐 "+EVENT.time+"\n📍 "+EVENT.place+"\n\nAcara ini dilengkapi:\n🎁 Undian doorprize (otomatis untuk semua yang hadir)\n🎄 Tukar kado (bagi yang membawa kado)\n\nBuka undangan dan QR absen Anda di sini:\n{var1}\n\nMohon tunjukkan QR tersebut kepada panitia saat tiba. Kami menantikan kehadiran Anda. Tuhan memberkati. 🙏"; };
+var TPL = function(){
+  return "🎄✨ *UNDANGAN PERAYAAN NATAL* ✨🎄\n" +
+    "_" + EVENT.org + "_\n\n" +
+    "Shalom *{name}*,\n\n" +
+    "Dengan penuh sukacita dan kasih Natal, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dalam *" + EVENT.title + "*:\n\n" +
+    "🗓️ *Hari/Tanggal:* " + EVENT.date + "\n" +
+    "⏰ *Waktu:* " + EVENT.time + "\n" +
+    "📍 *Tempat:* " + EVENT.place + "\n\n" +
+    "✨ *Rangkaian Meriah Acara:*\n" +
+    "🎁 Undian Doorprize (otomatis untuk seluruh tamu yang hadir)\n" +
+    "🎅 Tukar Kado Natal (khusus bagi yang membawa kado)\n\n" +
+    "🎟️ *Buka Kartu Undangan & QR Absensi Anda di sini:*\n" +
+    "{var1}\n\n" +
+    "Mohon tunjukkan QR Code pada tautan di atas kepada panitia saat tiba di lokasi. Kehadiran Anda akan menambah sukacita perayaan kita bersama.\n\n" +
+    "Selamat menyambut Natal! Tuhan Yesus memberkati. 🙏🌟";
+};
 var msgFor = function(n, link){ return TPL().replace("{name}", n).replace("{var1}", link); };
 var normPhone = function(p){ p = String(p||"").replace(/\D/g,""); if(!p) return ""; if(p.indexOf("62")===0) return "0"+p.slice(2); return p.charAt(0)==="0" ? p : "0"+p; };
 var linkFor = function(slug){ return location.origin+location.pathname+"#"+slug; };
@@ -457,11 +520,12 @@ function sendTamu(list){
   });
 }
 
+// ===== Scan & Validasi Tamu Terdaftar =====
 function tabScan(){
   $("body").innerHTML =
    '<div class="stat card sans" id="stats"></div><div class="card sans"><div id="dbnote" class="mute"></div><div id="reader"></div>'+
    '<div class="row"><button class="pri" id="start">Mulai kamera</button><button id="stop" class="hide">Stop</button></div>'+
-   '<div class="row"><input id="man" placeholder="Kode manual / nama tamu (jalan masuk)"><button id="go" style="flex:none">Cek-in</button></div><div id="res"></div></div>';
+   '<div class="row"><input id="man" placeholder="Kode manual / nama tamu terdaftar"><button id="go" style="flex:none">Cek-in</button></div><div id="res"></div></div>';
   stats();
   $("start").onclick = startScan; $("stop").onclick = stopScan;
   $("go").onclick = function(){ var v = slugify($("man").value); if(v) checkin(v); $("man").value=""; };
@@ -480,9 +544,20 @@ function stopScan(){ if(H.scanner){ var s = H.scanner; H.scanner = null; try{ s.
 
 function checkin(slug){
   if(!slug) return;
-  var ex = H.rows.filter(function(x){return x.id===slug;})[0];
+  var ex = H.rows.filter(function(x){ return x.id === slug; })[0];
   if(ex) return showRes(ex, true);
-  sb.from("hadir").insert({id:slug, name:niceName(slug)}).select().single().then(function(r){
+
+  // Validasi: hanya tamu terdaftar di tabel tamu yang bisa check-in
+  var guest = H.tamu.filter(function(x){ return x.id === slug; })[0];
+  if(!guest){
+    $("res").innerHTML = '<div class="res" style="border:1px solid var(--accent);color:var(--accent)">' +
+      '<b>⛔ Ditolak: Tidak Terdaftar</b>' +
+      '<div class="mute">Kode <code>' + esc(slug) + '</code> tidak ditemukan dalam daftar undangan.</div>' +
+      '</div>';
+    return;
+  }
+
+  sb.from("hadir").insert({id: guest.id, name: guest.name}).select().single().then(function(r){
     if(r.error){ $("res").innerHTML = '<div class="res">Gagal: '+esc(r.error.message)+'</div>'; return; }
     H.rows.push(r.data); stats(); showRes(r.data, false);
   });
@@ -500,34 +575,189 @@ function showRes(rec, dup){
   };
 }
 
+// ===== Doorprize Spin Wheel =====
+function drawWheel(pool, angle){
+  var c = $("wheel"); if(!c) return;
+  var ctx = c.getContext("2d"), cx = c.width/2, cy = c.height/2, r = cx - 4;
+  ctx.clearRect(0, 0, c.width, c.height);
+  if(!pool.length){
+    ctx.fillStyle = "#e2d8c5"; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "#636e67"; ctx.font = "bold 16px system-ui"; ctx.textAlign = "center";
+    ctx.fillText("Belum ada peserta", cx, cy+6);
+    return;
+  }
+  var colors = ["#b81d24","#165b33","#c5912c","#1d6f42","#96181e","#d4a037"];
+  var step = (Math.PI * 2) / pool.length;
+  var fontSize = pool.length > 24 ? 9 : pool.length > 14 ? 11 : 13;
+
+  pool.forEach(function(item, i){
+    var start = angle + i * step;
+    var end = start + step;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, start, end);
+    ctx.closePath();
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,0.45)";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(start + step / 2);
+    ctx.textAlign = "right";
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold " + fontSize + "px system-ui, sans-serif";
+    var label = item.name.length > 15 ? item.name.slice(0, 14) + "…" : item.name;
+    ctx.fillText(label, r - 12, fontSize / 3);
+    ctx.restore();
+  });
+
+  // Titik tengah roda
+  ctx.beginPath();
+  ctx.arc(cx, cy, 20, 0, Math.PI*2);
+  ctx.fillStyle = "#fffdf9";
+  ctx.fill();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "#c5912c";
+  ctx.stroke();
+  ctx.fillStyle = "#b81d24";
+  ctx.font = "16px serif";
+  ctx.textAlign = "center";
+  ctx.fillText("★", cx, cy + 6);
+}
+
 function tabDoor(){
-  var pool = H.rows.filter(function(x){return !x.won;}), won = H.rows.filter(function(x){return x.won;}).sort(function(a,b){return a.won-b.won;});
+  var pool = H.rows.filter(function(x){return !x.won;});
+  var won = H.rows.filter(function(x){return x.won;}).sort(function(a,b){return a.won-b.won;});
   $("body").innerHTML =
-   '<div class="card sans"><div class="mute">Hadir & belum menang: <b>'+pool.length+'</b></div><div class="big" id="pick">🎁</div>'+
-   '<div class="row"><button class="red" id="draw"'+(pool.length?"":" disabled")+'>Undi pemenang</button></div></div>'+
-   '<div class="card sans"><b>Pemenang</b>'+(won.map(function(x){ return '<div class="item"><span>#'+x.won+' '+esc(x.name)+'</span></div>'; }).join("")||'<div class="mute">Belum ada.</div>')+'</div>';
+   '<div class="card sans" style="text-align:center">'+
+     '<div class="mute">Peserta di roda undian: <b>'+pool.length+'</b></div>'+
+     '<div class="wheel-box"><div class="wheel-ptr"></div><canvas id="wheel" width="300" height="300"></canvas></div>'+
+     '<div class="big" id="pick">'+(pool.length ? "🎄 Siap Putar!" : "Semua sudah menang")+'</div>'+
+     '<div class="row"><button class="red" id="draw"'+(pool.length?"":" disabled")+'>🎡 Putar Spin Wheel</button></div>'+
+   '</div>'+
+   '<div class="card sans"><b>🏆 Daftar Pemenang ('+won.length+')</b>'+
+     (won.map(function(x){ return '<div class="item"><span>#'+x.won+' '+esc(x.name)+'</span><span>🎉</span></div>'; }).join("")||'<div class="mute">Belum ada pemenang.</div>')+
+   '</div>';
+
+  drawWheel(pool, H.angle);
+
   $("draw").onclick = function(){
-    H.busy = true; $("draw").disabled = true; var n = 0;
-    var t = setInterval(function(){
-      $("pick").textContent = pool[Math.floor(Math.random()*pool.length)].name;
-      if(++n > 18){ clearInterval(t);
-        var w = pool[Math.floor(Math.random()*pool.length)]; $("pick").textContent = "🎉 "+w.name+" 🎉";
-        sb.from("hadir").update({won: won.length+1}).eq("id", w.id).then(function(){ setTimeout(function(){ H.busy=false; load(); }, 4000); });
+    if(!pool.length || H.busy) return;
+    H.busy = true;
+    $("draw").disabled = true;
+    $("pick").textContent = "Memutar roda… 🎶";
+
+    var winIdx = Math.floor(Math.random() * pool.length);
+    var step = (Math.PI * 2) / pool.length;
+    // Panah berada di atas (-Math.PI / 2). Hitung sudut akhir agar irisan winIdx tepat di bawah panah
+    var targetBase = (-Math.PI / 2) - (winIdx * step + step / 2);
+    var extraSpins = (6 + Math.floor(Math.random() * 3)) * Math.PI * 2;
+    var startAngle = H.angle;
+    var currentMod = ((startAngle % (Math.PI*2)) + Math.PI*2) % (Math.PI*2);
+    var targetMod = ((targetBase % (Math.PI*2)) + Math.PI*2) % (Math.PI*2);
+    var delta = targetMod - currentMod;
+    if(delta < 0) delta += Math.PI * 2;
+    var totalRot = extraSpins + delta;
+
+    var dur = 4800, t0 = performance.now();
+    function anim(now){
+      var p = Math.min(1, (now - t0) / dur);
+      var ease = 1 - Math.pow(1 - p, 4);
+      H.angle = startAngle + totalRot * ease;
+      drawWheel(pool, H.angle);
+      if(p < 1){
+        requestAnimationFrame(anim);
+      } else {
+        var w = pool[winIdx];
+        $("pick").textContent = "🎉 " + w.name + " 🎉";
+        sb.from("hadir").update({won: won.length + 1}).eq("id", w.id).then(function(){
+          setTimeout(function(){ H.busy = false; load(); }, 3500);
+        });
       }
-    }, 90);
+    }
+    requestAnimationFrame(anim);
   };
 }
 
+// ===== Tukar Kado 1-per-1 =====
 function tabKado(){
   var gifts = H.rows.filter(function(x){return x.gift;}).sort(function(a,b){return a.gift_no-b.gift_no;});
-  var done = gifts.length && gifts.every(function(x){return x.get_no;});
+  var done = gifts.length >= 2 && gifts.every(function(x){return x.get_no;});
+  var unrev = gifts.filter(function(x){ return x.get_no && !H.rev[x.id]; });
+
+  var stageHtml = "";
+  if(done){
+    if(H.curKado){
+      var cur = gifts.filter(function(x){ return x.id === H.curKado; })[0];
+      if(cur){
+        var isOpen = !!H.rev[cur.id];
+        stageHtml =
+          '<div class="stage">'+
+            '<div class="mute">Giliran Tukar Kado (membawa kado No. '+cur.gift_no+')</div>'+
+            '<div class="stage-name">🎄 '+esc(cur.name)+'</div>'+
+            '<div class="stage-no" id="kno">'+(isOpen ? "🎁 Kado No. "+cur.get_no : "🎁 No. ?")+'</div>'+
+            '<div class="row">'+
+              (!isOpen ? '<button class="red" id="open1">✨ Buka Nomor Kado</button>' : '')+
+              (isOpen && unrev.length ? '<button class="pri" id="next1">➡️ Panggil Peserta Berikutnya ('+unrev.length+' tersisa)</button>' : '')+
+            '</div>'+
+          '</div>';
+      }
+    } else if(unrev.length){
+      stageHtml =
+        '<div class="stage">'+
+          '<div class="mute">Pembagian sudah diacak & siap dibuka 1-per-1 ('+unrev.length+' peserta tersisa)</div>'+
+          '<div class="row" style="margin-top:10px"><button class="pri" id="next1">🎤 Panggil Peserta Pertama</button></div>'+
+        '</div>';
+    } else {
+      stageHtml = '<div class="stage"><b>🎉 Semua peserta sudah mendapat kadonya!</b></div>';
+    }
+  }
+
   $("body").innerHTML =
-   '<div class="card sans"><b>Tukar kado</b><div class="mute">Pembawa kado: '+gifts.length+'. Tiap orang mendapat kado orang lain secara acak.</div>'+
-   '<div class="row"><button class="red" id="mix"'+(gifts.length<2?" disabled":"")+'>'+(done?"Acak ulang":"Acak pembagian kado")+'</button></div>'+
-   gifts.map(function(x){ return '<div class="item"><span>'+esc(x.name)+' <span class="mute">(kado No. '+x.gift_no+')</span></span><b>'+(x.get_no?"→ No. "+x.get_no:"")+'</b></div>'; }).join("")+'</div>';
+   '<div class="card sans"><b>🎁 Tukar Kado (Mode 1-per-1)</b>'+
+     '<div class="mute">Pembawa kado: <b>'+gifts.length+'</b>. Sistem menjamin tiap orang mendapat kado milik orang lain.</div>'+
+     '<div class="row">'+
+       '<button class="red" id="mix"'+(gifts.length<2?" disabled":"")+'>'+(done?"🔀 Acak Ulang Semua":"🔀 Acak Pembagian Kado")+'</button>'+
+       (done ? '<button id="tog">'+(H.showAllKado?"Sembunyikan Daftar":"Lihat Semua")+'</button>' : '')+
+     '</div>'+
+     stageHtml+
+     '<div style="margin-top:10px">'+
+     gifts.map(function(x){
+       var show = H.showAllKado || H.rev[x.id];
+       return '<div class="item"><span>'+esc(x.name)+' <span class="mute">(kado No. '+x.gift_no+')</span></span><b>'+(x.get_no ? (show ? "→ No. "+x.get_no : "🔒") : "")+'</b></div>';
+     }).join("")+
+     '</div>'+
+   '</div>';
+
   $("mix").onclick = function(){
-    var r = gifts.slice().sort(function(){ return Math.random()-.5; }); $("mix").disabled = true;
+    if(done && !confirm("Acak ulang semua pembagian kado dari awal?")) return;
+    var r = gifts.slice().sort(function(){ return Math.random()-.5; });
+    $("mix").disabled = true; H.rev = {}; H.curKado = null; H.showAllKado = false;
     Promise.all(r.map(function(x,i){ return sb.from("hadir").update({get_no: r[(i+1)%r.length].gift_no}).eq("id", x.id); })).then(load);
+  };
+  if($("tog")) $("tog").onclick = function(){ H.showAllKado = !H.showAllKado; tabKado(); };
+  if($("next1")) $("next1").onclick = function(){
+    var pick = unrev[Math.floor(Math.random() * unrev.length)];
+    if(pick){ H.curKado = pick.id; tabKado(); }
+  };
+  if($("open1")) $("open1").onclick = function(){
+    var cur = gifts.filter(function(x){ return x.id === H.curKado; })[0];
+    if(!cur) return;
+    H.busy = true; $("open1").disabled = true;
+    var n = 0;
+    var t = setInterval(function(){
+      var rnd = gifts[Math.floor(Math.random()*gifts.length)].gift_no;
+      $("kno").textContent = "🎁 Kado No. " + rnd;
+      if(++n > 14){
+        clearInterval(t);
+        H.rev[cur.id] = true;
+        H.busy = false;
+        tabKado();
+      }
+    }, 75);
   };
 }
 route();
