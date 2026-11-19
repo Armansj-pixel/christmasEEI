@@ -313,11 +313,15 @@ body.fs-mode .stage{padding:36px 24px}
 body.fs-mode .stage-name{font-size:40px;margin:12px 0}
 body.fs-mode .stage-no{font-size:60px;margin:16px 0}
 body.fs-mode button{font-size:17px;padding:14px 22px}
-.fs-exit{
+.fs-tools{
   position:fixed;top:14px;right:14px;z-index:60;
+  display:flex;gap:8px;align-items:center;
+}
+.fs-tools button{
   background:var(--card);border:1px solid var(--gold);
   padding:8px 14px;border-radius:99px;font-size:13px;
   box-shadow:0 4px 12px rgba(0,0,0,0.15);
+  min-height:44px;
 }
 .fs-banner{
   display:none;
@@ -420,22 +424,10 @@ textarea:focus-visible {
   overflow-wrap: anywhere;
 }
 
-.verse {
-  max-width: 100%;
-}
-
-.details {
-  width: 100%;
-}
-
-.detail-row {
-  min-width: 0;
-}
-
-.detail-row > div {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
+.verse { max-width: 100%; }
+.details { width: 100%; }
+.detail-row { min-width: 0; }
+.detail-row > div { min-width: 0; overflow-wrap: anywhere; }
 
 /* Panel navigasi */
 .tabs {
@@ -453,22 +445,15 @@ textarea:focus-visible {
 }
 
 /* Form dan tombol */
-.row {
-  gap: 10px;
-}
-
-.row > * {
-  min-width: 0;
-}
+.row { gap: 10px; }
+.row > * { min-width: 0; }
 
 input, textarea {
   min-width: 0;
   border-radius: 12px;
 }
 
-textarea {
-  resize: vertical;
-}
+textarea { resize: vertical; }
 
 button {
   border-radius: 12px;
@@ -476,9 +461,7 @@ button {
   transition: background .2s ease, transform .15s ease;
 }
 
-button:active {
-  transform: scale(.97);
-}
+button:active { transform: scale(.97); }
 
 /* Daftar tamu */
 .item {
@@ -492,13 +475,8 @@ button:active {
   overflow-wrap: anywhere;
 }
 
-.item .btns {
-  flex-wrap: wrap;
-}
-
-.item button {
-  min-height: 38px;
-}
+.item .btns { flex-wrap: wrap; }
+.item button { min-height: 38px; }
 
 /* Hasil scan */
 .res {
@@ -507,25 +485,12 @@ button:active {
 }
 
 /* QR */
-#qr {
-  max-width: 100%;
-}
-
-#qr img,
-#qr canvas {
-  max-width: 100%;
-  height: auto !important;
-}
+#qr { max-width: 100%; }
+#qr img, #qr canvas { max-width: 100%; height: auto !important; }
 
 /* Scanner */
-#reader {
-  max-width: 100%;
-}
-
-#reader video {
-  max-width: 100% !important;
-  object-fit: cover;
-}
+#reader { max-width: 100%; }
+#reader video { max-width: 100% !important; object-fit: cover; }
 
 /* Roda undian */
 .wheel-box {
@@ -534,10 +499,7 @@ button:active {
   aspect-ratio: 1;
 }
 
-#wheel {
-  width: 100%;
-  height: 100%;
-}
+#wheel { width: 100%; height: 100%; }
 
 /* Mode fullscreen */
 body.fs-mode {
@@ -557,118 +519,53 @@ body.fs-mode .wheel-box {
   aspect-ratio: 1;
 }
 
-.fs-exit {
-  min-height: 44px;
+.fs-tools {
   top: max(12px, env(safe-area-inset-top));
   right: max(12px, env(safe-area-inset-right));
 }
 
-.stage {
-  overflow-wrap: anywhere;
-}
-
-.stage-name {
-  font-size: clamp(22px, 5vw, 40px);
-}
+.stage { overflow-wrap: anywhere; }
+.stage-name { font-size: clamp(22px, 5vw, 40px); }
 
 /* Tablet */
 @media (min-width: 600px) {
-  .wrap {
-    padding: 24px;
-  }
-
-  .tabs {
-    gap: 12px;
-  }
-
-  .tabs button {
-    padding: 12px;
-  }
-
-  .wheel-box {
-    width: min(50vw, 390px);
-  }
-
-  .card {
-    margin-bottom: 18px;
-  }
-
-  .stat {
-    gap: 14px;
-  }
+  .wrap { padding: 24px; }
+  .tabs { gap: 12px; }
+  .tabs button { padding: 12px; }
+  .wheel-box { width: min(50vw, 390px); }
+  .card { margin-bottom: 18px; }
+  .stat { gap: 14px; }
 }
 
 /* Desktop */
 @media (min-width: 900px) {
-  .wrap {
-    max-width: 1000px;
-  }
-
-  .inv,
-  .guide-card {
-    max-width: 560px;
-  }
-
-  .wheel-box {
-    width: 390px;
-  }
-
-  .item {
-    padding: 14px 4px;
-  }
+  .wrap { max-width: 1000px; }
+  .inv, .guide-card { max-width: 560px; }
+  .wheel-box { width: 390px; }
+  .item { padding: 14px 4px; }
 }
 
 /* HP kecil */
 @media (max-width: 380px) {
-  .wrap {
-    padding: 10px;
-  }
-
-  .card {
-    padding: 15px 13px;
-    border-radius: 15px;
-  }
-
-  .tabs {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .item {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .item .btns {
-    width: 100%;
-  }
-
-  .item .btns button {
-    flex: 1;
-  }
-
-  .wheel-box {
-    width: min(78vw, 290px);
-  }
-
-  .details {
-    padding: 12px;
-  }
+  .wrap { padding: 10px; }
+  .card { padding: 15px 13px; border-radius: 15px; }
+  .tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .item { align-items: flex-start; flex-direction: column; }
+  .item .btns { width: 100%; }
+  .item .btns button { flex: 1; }
+  .wheel-box { width: min(78vw, 290px); }
+  .details { padding: 12px; }
 }
 
 /* Kurangi animasi bagi pengguna yang membutuhkan */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     scroll-behavior: auto !important;
     animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: .01ms !important;
   }
-
-  .snow-wrap {
-    display: none !important;
-  }
+  .snow-wrap { display: none !important; }
 }
 </style>
 </head>
@@ -696,14 +593,88 @@ var $ = function(id){ return document.getElementById(id); };
 var esc = function(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); };
 var slugify = function(n){ return n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""); };
 var niceName = function(s){ return s.split("-").filter(Boolean).map(function(w){ return w.charAt(0).toUpperCase()+w.slice(1); }).join(" "); };
+
+// ===== Penyimpanan Lokal Progres Tukar Kado =====
+var K_REV = "natal_kado_rev_v1", K_CUR = "natal_kado_cur_v1", K_SND = "natal_sfx_v1";
+function readJSON(k, fb){ try{ var v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; }catch(e){ return fb; } }
+function saveKadoState(){
+  try{
+    localStorage.setItem(K_REV, JSON.stringify(H.rev));
+    if(H.curKado) localStorage.setItem(K_CUR, H.curKado); else localStorage.removeItem(K_CUR);
+  }catch(e){}
+}
+
 var sb = null;
 var H = {
   rows:[], tamu:[], tab:"undangan",
   scanner:null, scanning:false, last:null,
   poll:null, busy:false, loading:false,
-  angle:0, rev:{}, curKado:null, fs:false
+  angle:0, lastWin:null,
+  rev: readJSON(K_REV, {}),
+  curKado: (function(){ try{ return localStorage.getItem(K_CUR) || null; }catch(e){ return null; } })(),
+  fs:false,
+  sound: (function(){ try{ return localStorage.getItem(K_SND) !== "0"; }catch(e){ return true; } })()
 };
 try{ sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }catch(e){}
+
+// ===== Efek Suara (Web Audio API - Tanpa File MP3) =====
+var SFX = (function(){
+  var ctx = null;
+  function getCtx(){
+    if(!H.sound) return null;
+    if(!ctx){
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if(AC) ctx = new AC();
+    }
+    if(ctx && ctx.state === "suspended") ctx.resume().catch(function(){});
+    return ctx;
+  }
+  function tone(freq, start, dur, type, vol){
+    var c = getCtx(); if(!c) return;
+    var o = c.createOscillator(), g = c.createGain();
+    o.type = type || "triangle";
+    o.frequency.setValueAtTime(freq, start);
+    g.gain.setValueAtTime(vol || 0.14, start);
+    g.gain.exponentialRampToValueAtTime(0.001, start + dur);
+    o.connect(g); g.connect(c.destination);
+    o.start(start); o.stop(start + dur);
+  }
+  return {
+    tick: function(pitch){
+      var c = getCtx(); if(!c) return;
+      tone(pitch || 720, c.currentTime, 0.038, "triangle", 0.11);
+    },
+    win: function(){
+      var c = getCtx(); if(!c) return;
+      var t = c.currentTime;
+      // Arpeggio Natal ceria (C5 - E5 - G5 - C6 - G5 - C6)
+      var notes = [[523.25,0,0.14],[659.25,0.11,0.14],[783.99,0.22,0.14],[1046.5,0.34,0.26],[783.99,0.52,0.12],[1046.5,0.64,0.45]];
+      notes.forEach(function(n){ tone(n[0], t + n[1], n[2], "triangle", 0.18); });
+      // Kilauan lonceng halus
+      tone(1567.98, t + 0.64, 0.4, "sine", 0.08);
+    },
+    ok: function(){
+      var c = getCtx(); if(!c) return;
+      var t = c.currentTime;
+      tone(660, t, 0.09, "sine", 0.14);
+      tone(990, t + 0.09, 0.14, "sine", 0.14);
+    },
+    err: function(){
+      var c = getCtx(); if(!c) return;
+      var t = c.currentTime;
+      tone(220, t, 0.16, "sawtooth", 0.12);
+      tone(170, t + 0.14, 0.2, "sawtooth", 0.12);
+    }
+  };
+})();
+
+function toggleSound(){
+  H.sound = !H.sound;
+  try{ localStorage.setItem(K_SND, H.sound ? "1" : "0"); }catch(e){}
+  if(H.sound) SFX.ok();
+  var b1 = $("sndTop"); if(b1) b1.textContent = H.sound ? "🔊 Suara ON" : "🔇 Suara OFF";
+  var b2 = $("sndFS"); if(b2) b2.textContent = H.sound ? "🔊" : "🔇";
+}
 
 function setSnow(on){
   var el = $("snow");
@@ -862,8 +833,13 @@ function stats(){
 function panel(){
   clearInterval(H.poll);
   if(H.tab !== "doorprize" && H.tab !== "kado") exitFS();
-  app.innerHTML = '<div class="fs-hide"><h2>🎄 Panel Panitia</h2><div class="mute sans" style="margin-bottom:10px">'+esc(EVENT.title)+' — '+esc(EVENT.org)+' · <a href="#" id="out" style="color:var(--accent)">keluar</a></div>'+
+  app.innerHTML = '<div class="fs-hide">'+
+    '<div class="row" style="margin:0 0 6px;justify-content:space-between">'+
+      '<div><h2>🎄 Panel Panitia</h2><div class="mute sans">'+esc(EVENT.title)+' — '+esc(EVENT.org)+' · <a href="#" id="out" style="color:var(--accent)">keluar</a></div></div>'+
+      '<button id="sndTop" style="flex:none;font-size:13px;padding:8px 12px">'+(H.sound?"🔊 Suara ON":"🔇 Suara OFF")+'</button>'+
+    '</div>'+
    '<div class="tabs sans" id="tabs"></div></div><div id="body"></div>';
+  $("sndTop").onclick = toggleSound;
   $("out").onclick = function(e){ e.preventDefault(); stopScan(); clearInterval(H.poll); H.poll = null; exitFS(); sb.auth.signOut().then(gate); };
   var tabs = [["undangan","Undangan"],["scan","Scan"],["doorprize","Doorprize"],["kado","Kado"]];
   $("tabs").innerHTML = tabs.map(function(t){ return '<button data-t="'+t[0]+'" class="'+(H.tab===t[0]?"on":"")+'">'+t[1]+'</button>'; }).join("");
@@ -953,7 +929,7 @@ function sendTamu(list){
   });
 }
 
-// ===== Scan & Validasi Tamu Terdaftar (Lifecycle Kamera Aman) =====
+// ===== Scan & Validasi Tamu Terdaftar (Lifecycle Kamera Aman + Anti Bentrok Kado) =====
 function tabScan(){
   $("body").innerHTML =
    '<div class="stat card sans" id="stats"></div><div class="card sans"><div id="dbnote" class="mute"></div><div id="reader"></div>'+
@@ -999,11 +975,11 @@ function stopScan(){
 function checkin(slug){
   if(!slug) return;
   var ex = H.rows.filter(function(x){ return x.id === slug; })[0];
-  if(ex) return showRes(ex, true);
+  if(ex){ SFX.err(); return showRes(ex, true); }
 
-  // Validasi: hanya tamu terdaftar di tabel tamu yang bisa check-in
   var guest = H.tamu.filter(function(x){ return x.id === slug; })[0];
   if(!guest){
+    SFX.err();
     $("res").innerHTML = '<div class="res" style="border:1px solid var(--accent);color:var(--accent)">' +
       '<b>⛔ Ditolak: Tidak Terdaftar</b>' +
       '<div class="mute">Kode <code>' + esc(slug) + '</code> tidak ditemukan dalam daftar undangan.</div>' +
@@ -1012,7 +988,8 @@ function checkin(slug){
   }
 
   sb.from("hadir").insert({id: guest.id, name: guest.name}).select().single().then(function(r){
-    if(r.error){ $("res").innerHTML = '<div class="res">Gagal: '+esc(r.error.message)+'</div>'; return; }
+    if(r.error){ SFX.err(); $("res").innerHTML = '<div class="res">Gagal: '+esc(r.error.message)+'</div>'; return; }
+    SFX.ok();
     H.rows.push(r.data); stats(); showRes(r.data, false);
   });
 }
@@ -1024,13 +1001,23 @@ function showRes(rec, dup){
     g.disabled = true;
     var no = H.rows.reduce(function(m,x){return Math.max(m, x.gift_no||0);},0)+1;
     sb.from("hadir").update({gift:true, gift_no:no}).eq("id", rec.id).then(function(r){
-      if(r.error){ g.disabled = false; return; }
-      rec.gift = true; rec.gift_no = no; stats(); $("gs").textContent = "Kado No. "+no+" — tempel nomor ini pada kado."; g.remove();
+      if(r.error){
+        SFX.err();
+        var dupErr = r.error.code === "23505" || /duplicate|unique/i.test(r.error.message||"");
+        $("gs").innerHTML = '<span style="color:var(--accent)">⚠️ '+(dupErr ? "Nomor kado bentrok dengan panitia lain. Memperbarui data, silakan klik lagi." : "Gagal menyimpan: "+esc(r.error.message))+'</span>';
+        g.disabled = false;
+        load();
+        return;
+      }
+      SFX.ok();
+      rec.gift = true; rec.gift_no = no; stats();
+      $("gs").textContent = "Kado No. "+no+" — tempel nomor ini pada kado.";
+      g.remove();
     });
   };
 }
 
-// ===== Doorprize Spin Wheel + Fullscreen =====
+// ===== Doorprize Spin Wheel + Suara Sinkron + Fullscreen =====
 function drawWheel(pool, angle){
   var c = $("wheel"); if(!c) return;
   var ctx = c.getContext("2d"), cx = c.width/2, cy = c.height/2, r = cx - 6;
@@ -1069,7 +1056,6 @@ function drawWheel(pool, angle){
     ctx.restore();
   });
 
-  // Titik tengah roda
   ctx.beginPath();
   ctx.arc(cx, cy, 28, 0, Math.PI*2);
   ctx.fillStyle = "#fffdf9";
@@ -1087,12 +1073,12 @@ function tabDoor(){
   var pool = H.rows.filter(function(x){return !x.won;});
   var won = H.rows.filter(function(x){return x.won;}).sort(function(a,b){return a.won-b.won;});
   $("body").innerHTML =
-   (H.fs ? '<button class="fs-exit sans" id="fsbtn">✕ Keluar Layar Penuh</button>' : '')+
+   (H.fs ? '<div class="fs-tools sans"><button id="sndFS" title="Suara">'+(H.sound?"🔊":"🔇")+'</button><button id="fsbtn">✕ Keluar</button></div>' : '')+
    '<div class="card sans fs-main" style="text-align:center">'+
      '<div class="fs-banner"><h2>🎄 Undian Doorprize '+esc(EVENT.title)+'</h2><div class="mute">'+esc(EVENT.org)+'</div></div>'+
      '<div class="row fs-hide" style="margin-top:0"><span class="mute" style="text-align:left">Peserta di roda undian: <b>'+pool.length+'</b></span><button id="fsbtn" style="flex:none">⛶ Layar Penuh</button></div>'+
      '<div class="wheel-box"><div class="wheel-ptr"></div><canvas id="wheel" width="460" height="460"></canvas></div>'+
-     '<div class="big" id="pick">'+(pool.length ? "🎄 Siap Putar!" : "Semua sudah menang")+'</div>'+
+     '<div class="big" id="pick">'+(H.lastWin ? "🎉 "+esc(H.lastWin)+" 🎉" : pool.length ? "🎄 Siap Putar!" : "Semua sudah menang")+'</div>'+
      '<div class="row"><button class="red" id="draw"'+(pool.length?"":" disabled")+'>🎡 Putar Spin Wheel</button></div>'+
    '</div>'+
    '<div class="card sans fs-hide"><b>🏆 Daftar Pemenang ('+won.length+')</b>'+
@@ -1101,10 +1087,12 @@ function tabDoor(){
 
   drawWheel(pool, H.angle);
   if($("fsbtn")) $("fsbtn").onclick = toggleFS;
+  if($("sndFS")) $("sndFS").onclick = toggleSound;
 
   $("draw").onclick = function(){
     if(!pool.length || H.busy) return;
     H.busy = true;
+    H.lastWin = null;
     $("draw").disabled = true;
     $("pick").textContent = "Memutar roda… 🎶";
 
@@ -1120,17 +1108,34 @@ function tabDoor(){
     var totalRot = extraSpins + delta;
 
     var dur = 4800, t0 = performance.now();
+    var lastSlice = -1;
     function anim(now){
       var p = Math.min(1, (now - t0) / dur);
       var ease = 1 - Math.pow(1 - p, 4);
       H.angle = startAngle + totalRot * ease;
       drawWheel(pool, H.angle);
+
+      // Bunyi ketukan setiap kali irisan baru melewati panah atas
+      var norm = (((-Math.PI / 2 - H.angle) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+      var slice = Math.floor(norm / step);
+      if(slice !== lastSlice){
+        lastSlice = slice;
+        SFX.tick(680 + (slice % 2) * 90);
+      }
+
       if(p < 1){
         requestAnimationFrame(anim);
       } else {
         var w = pool[winIdx];
+        H.lastWin = w.name;
         $("pick").textContent = "🎉 " + w.name + " 🎉";
-        sb.from("hadir").update({won: won.length + 1}).eq("id", w.id).then(function(){
+        SFX.win();
+        sb.from("hadir").update({won: won.length + 1}).eq("id", w.id).then(function(r){
+          if(r.error){
+            H.lastWin = null;
+            SFX.err();
+            $("pick").textContent = "Gagal menyimpan pemenang: " + r.error.message;
+          }
           setTimeout(function(){ H.busy = false; load(); }, 3500);
         });
       }
@@ -1139,7 +1144,7 @@ function tabDoor(){
   };
 }
 
-// ===== Tukar Kado 1-per-1 (Organik + Animasi Acak + Fullscreen) =====
+// ===== Tukar Kado 1-per-1 (Organik + Animasi & Suara + LocalStorage + Fullscreen) =====
 function shuffle(arr){
   var a = arr.slice();
   for(var i = a.length - 1; i > 0; i--){
@@ -1186,7 +1191,7 @@ function tabKado(){
   }
 
   $("body").innerHTML =
-   (H.fs ? '<button class="fs-exit sans" id="fsbtn">✕ Keluar Layar Penuh</button>' : '')+
+   (H.fs ? '<div class="fs-tools sans"><button id="sndFS" title="Suara">'+(H.sound?"🔊":"🔇")+'</button><button id="fsbtn">✕ Keluar</button></div>' : '')+
    '<div class="card sans fs-main">'+
      '<div class="fs-banner"><h2>🎁 Tukar Kado '+esc(EVENT.title)+'</h2><div class="mute">'+esc(EVENT.org)+'</div></div>'+
      '<div class="row fs-hide" style="margin-top:0">'+
@@ -1206,17 +1211,18 @@ function tabKado(){
    '</div>';
 
   if($("fsbtn")) $("fsbtn").onclick = toggleFS;
+  if($("sndFS")) $("sndFS").onclick = toggleSound;
   if($("mix")) $("mix").onclick = function(){
     if(H.busy) return;
     if(done && !confirm("Acak ulang semua pembagian kado dari awal?")) return;
     H.busy = true;
     var r = shuffle(gifts);
-    $("mix").disabled = true; H.rev = {}; H.curKado = null;
+    $("mix").disabled = true; H.rev = {}; H.curKado = null; saveKadoState();
     Promise.all(r.map(function(x,i){ return sb.from("hadir").update({get_no: r[(i+1)%r.length].gift_no}).eq("id", x.id); }))
-      .finally(function(){ H.busy = false; load(); });
+      .finally(function(){ H.busy = false; SFX.ok(); load(); });
   };
 
-  // Animasi acak saat memanggil peserta
+  // Animasi & suara acak saat memanggil peserta
   if($("next1")) $("next1").onclick = function(){
     if(!unrev.length || H.busy) return;
     H.busy = true; $("next1").disabled = true;
@@ -1226,16 +1232,19 @@ function tabKado(){
     var t = setInterval(function(){
       var rnd = unrev[Math.floor(Math.random() * unrev.length)];
       if($("kname")) $("kname").textContent = "🎲 " + rnd.name;
+      SFX.tick(620 + (n % 3) * 70);
       if(++n > 15 || unrev.length === 1){
         clearInterval(t);
         H.curKado = pick.id;
+        saveKadoState();
         H.busy = false;
+        SFX.ok();
         tabKado();
       }
     }, 80);
   };
 
-  // Animasi acak saat membuka nomor kado
+  // Animasi & suara acak saat membuka nomor kado
   if($("open1")) $("open1").onclick = function(){
     var cur = gifts.filter(function(x){ return x.id === H.curKado; })[0];
     if(!cur || H.busy) return;
@@ -1244,10 +1253,13 @@ function tabKado(){
     var t = setInterval(function(){
       var rnd = gifts[Math.floor(Math.random()*gifts.length)].gift_no;
       $("kno").textContent = "🎁 Kado No. " + rnd;
+      SFX.tick(760 + (n % 2) * 110);
       if(++n > 14){
         clearInterval(t);
         H.rev[cur.id] = true;
+        saveKadoState();
         H.busy = false;
+        SFX.win();
         tabKado();
       }
     }, 75);
