@@ -262,8 +262,8 @@ ul.how li:last-child{margin-bottom:0}
   z-index:5;
 }
 #wheel{
-  width:300px;
-  height:300px;
+  width:100%;
+  height:100%;
   border-radius:50%;
   border:5px solid var(--gold);
   box-shadow:0 8px 24px rgba(0,0,0,0.18);
@@ -276,11 +276,55 @@ ul.how li:last-child{margin-bottom:0}
   background:var(--gold-light);
   border:2px dashed var(--gold);
   border-radius:14px;
-  padding:18px 14px;
+  padding:20px 14px;
   margin:12px 0;
 }
-.stage-name{font-size:24px;font-weight:700;color:var(--green);margin:4px 0}
-.stage-no{font-size:34px;font-weight:800;color:var(--accent);margin:8px 0}
+.stage-name{font-size:24px;font-weight:700;color:var(--green);margin:6px 0}
+.stage-no{font-size:36px;font-weight:800;color:var(--accent);margin:8px 0}
+
+/* Mode Fullscreen Panggung (Khusus Doorprize & Tukar Kado) */
+body.fs-mode{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+}
+body.fs-mode .wrap{
+  max-width:760px;
+  width:100%;
+  padding:0;
+}
+body.fs-mode .fs-hide{display:none !important}
+body.fs-mode .fs-main{
+  border:2px solid var(--gold);
+  padding:28px 24px;
+  margin:0;
+  box-shadow:0 16px 48px rgba(0,0,0,0.18);
+}
+body.fs-mode .wheel-box{
+  width:min(62vh, 450px);
+  height:min(62vh, 450px);
+}
+body.fs-mode .big{font-size:38px;margin:14px 0}
+body.fs-mode .stage{padding:36px 24px}
+body.fs-mode .stage-name{font-size:40px;margin:12px 0}
+body.fs-mode .stage-no{font-size:60px;margin:16px 0}
+body.fs-mode button{font-size:17px;padding:14px 22px}
+.fs-exit{
+  position:fixed;top:14px;right:14px;z-index:60;
+  background:var(--card);border:1px solid var(--gold);
+  padding:8px 14px;border-radius:99px;font-size:13px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.15);
+}
+.fs-banner{
+  display:none;
+  text-align:center;
+  margin-bottom:12px;
+}
+body.fs-mode .fs-banner{display:block}
+.fs-banner h2{font-size:24px;color:var(--green);margin:0}
+.fs-banner .mute{font-size:14px;color:var(--gold);font-weight:700}
 
 /* Panel Panitia & Kontrol */
 .tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto}.tabs button{flex:1;white-space:nowrap}
@@ -326,7 +370,7 @@ var $ = function(id){ return document.getElementById(id); };
 var esc = function(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); };
 var slugify = function(n){ return n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""); };
 var niceName = function(s){ return s.split("-").filter(Boolean).map(function(w){ return w.charAt(0).toUpperCase()+w.slice(1); }).join(" "); };
-var sb = null, H = {rows:[], tamu:[], tab:"undangan", scanner:null, last:null, poll:null, busy:false, angle:0, rev:{}, curKado:null, showAllKado:false};
+var sb = null, H = {rows:[], tamu:[], tab:"undangan", scanner:null, last:null, poll:null, busy:false, angle:0, rev:{}, curKado:null, fs:false};
 try{ sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }catch(e){}
 
 function setSnow(on){
@@ -345,8 +389,35 @@ function setSnow(on){
   el.innerHTML = html;
 }
 
+function exitFS(){
+  if(!H.fs) return;
+  H.fs = false;
+  document.body.classList.remove("fs-mode");
+  setSnow(false);
+  if(document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(function(){});
+}
+function toggleFS(){
+  if(H.fs){
+    exitFS();
+  } else {
+    H.fs = true;
+    document.body.classList.add("fs-mode");
+    setSnow(true);
+    if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(function(){});
+  }
+  refresh();
+}
+document.addEventListener("fullscreenchange", function(){
+  if(!document.fullscreenElement && H.fs){
+    H.fs = false;
+    document.body.classList.remove("fs-mode");
+    setSnow(false);
+    refresh();
+  }
+});
+
 function route(){
-  stopScan(); clearInterval(H.poll);
+  stopScan(); clearInterval(H.poll); exitFS();
   var h = decodeURIComponent(location.hash.replace("#",""));
   if(!h || h === "panitia"){ setSnow(false); return gate(); }
   setSnow(true);
@@ -432,12 +503,13 @@ function stats(){
 
 function panel(){
   clearInterval(H.poll);
-  app.innerHTML = '<h2>🎄 Panel Panitia</h2><div class="mute sans" style="margin-bottom:10px">'+esc(EVENT.title)+' — '+esc(EVENT.org)+' · <a href="#" id="out" style="color:var(--accent)">keluar</a></div>'+
-   '<div class="tabs sans" id="tabs"></div><div id="body"></div>';
-  $("out").onclick = function(e){ e.preventDefault(); sb.auth.signOut().then(gate); };
+  if(H.tab !== "doorprize" && H.tab !== "kado") exitFS();
+  app.innerHTML = '<div class="fs-hide"><h2>🎄 Panel Panitia</h2><div class="mute sans" style="margin-bottom:10px">'+esc(EVENT.title)+' — '+esc(EVENT.org)+' · <a href="#" id="out" style="color:var(--accent)">keluar</a></div>'+
+   '<div class="tabs sans" id="tabs"></div></div><div id="body"></div>';
+  $("out").onclick = function(e){ e.preventDefault(); exitFS(); sb.auth.signOut().then(gate); };
   var tabs = [["undangan","Undangan"],["scan","Scan"],["doorprize","Doorprize"],["kado","Kado"]];
   $("tabs").innerHTML = tabs.map(function(t){ return '<button data-t="'+t[0]+'" class="'+(H.tab===t[0]?"on":"")+'">'+t[1]+'</button>'; }).join("");
-  $("tabs").onclick = function(e){ var t = e.target.dataset.t; if(t){ stopScan(); H.tab = t; panel(); } };
+  $("tabs").onclick = function(e){ var t = e.target.dataset.t; if(t){ stopScan(); exitFS(); H.tab = t; panel(); } };
   ({undangan:tabUndangan, scan:tabScan, doorprize:tabDoor, kado:tabKado})[H.tab]();
   load(); H.poll = setInterval(load, 5000);
 }
@@ -575,20 +647,20 @@ function showRes(rec, dup){
   };
 }
 
-// ===== Doorprize Spin Wheel =====
+// ===== Doorprize Spin Wheel + Fullscreen =====
 function drawWheel(pool, angle){
   var c = $("wheel"); if(!c) return;
-  var ctx = c.getContext("2d"), cx = c.width/2, cy = c.height/2, r = cx - 4;
+  var ctx = c.getContext("2d"), cx = c.width/2, cy = c.height/2, r = cx - 6;
   ctx.clearRect(0, 0, c.width, c.height);
   if(!pool.length){
     ctx.fillStyle = "#e2d8c5"; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = "#636e67"; ctx.font = "bold 16px system-ui"; ctx.textAlign = "center";
-    ctx.fillText("Belum ada peserta", cx, cy+6);
+    ctx.fillStyle = "#636e67"; ctx.font = "bold 22px system-ui"; ctx.textAlign = "center";
+    ctx.fillText("Belum ada peserta", cx, cy+8);
     return;
   }
   var colors = ["#b81d24","#165b33","#c5912c","#1d6f42","#96181e","#d4a037"];
   var step = (Math.PI * 2) / pool.length;
-  var fontSize = pool.length > 24 ? 9 : pool.length > 14 ? 11 : 13;
+  var fontSize = pool.length > 24 ? 13 : pool.length > 14 ? 16 : 20;
 
   pool.forEach(function(item, i){
     var start = angle + i * step;
@@ -600,7 +672,7 @@ function drawWheel(pool, angle){
     ctx.fillStyle = colors[i % colors.length];
     ctx.fill();
     ctx.strokeStyle = "rgba(255,255,255,0.45)";
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 2;
     ctx.stroke();
 
     ctx.save();
@@ -609,40 +681,43 @@ function drawWheel(pool, angle){
     ctx.textAlign = "right";
     ctx.fillStyle = "#ffffff";
     ctx.font = "bold " + fontSize + "px system-ui, sans-serif";
-    var label = item.name.length > 15 ? item.name.slice(0, 14) + "…" : item.name;
-    ctx.fillText(label, r - 12, fontSize / 3);
+    var label = item.name.length > 16 ? item.name.slice(0, 15) + "…" : item.name;
+    ctx.fillText(label, r - 18, fontSize / 3);
     ctx.restore();
   });
 
   // Titik tengah roda
   ctx.beginPath();
-  ctx.arc(cx, cy, 20, 0, Math.PI*2);
+  ctx.arc(cx, cy, 28, 0, Math.PI*2);
   ctx.fillStyle = "#fffdf9";
   ctx.fill();
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 4;
   ctx.strokeStyle = "#c5912c";
   ctx.stroke();
   ctx.fillStyle = "#b81d24";
-  ctx.font = "16px serif";
+  ctx.font = "24px serif";
   ctx.textAlign = "center";
-  ctx.fillText("★", cx, cy + 6);
+  ctx.fillText("★", cx, cy + 8);
 }
 
 function tabDoor(){
   var pool = H.rows.filter(function(x){return !x.won;});
   var won = H.rows.filter(function(x){return x.won;}).sort(function(a,b){return a.won-b.won;});
   $("body").innerHTML =
-   '<div class="card sans" style="text-align:center">'+
-     '<div class="mute">Peserta di roda undian: <b>'+pool.length+'</b></div>'+
-     '<div class="wheel-box"><div class="wheel-ptr"></div><canvas id="wheel" width="300" height="300"></canvas></div>'+
+   (H.fs ? '<button class="fs-exit sans" id="fsbtn">✕ Keluar Layar Penuh</button>' : '')+
+   '<div class="card sans fs-main" style="text-align:center">'+
+     '<div class="fs-banner"><h2>🎄 Undian Doorprize '+esc(EVENT.title)+'</h2><div class="mute">'+esc(EVENT.org)+'</div></div>'+
+     '<div class="row fs-hide" style="margin-top:0"><span class="mute" style="text-align:left">Peserta di roda undian: <b>'+pool.length+'</b></span><button id="fsbtn" style="flex:none">⛶ Layar Penuh</button></div>'+
+     '<div class="wheel-box"><div class="wheel-ptr"></div><canvas id="wheel" width="460" height="460"></canvas></div>'+
      '<div class="big" id="pick">'+(pool.length ? "🎄 Siap Putar!" : "Semua sudah menang")+'</div>'+
      '<div class="row"><button class="red" id="draw"'+(pool.length?"":" disabled")+'>🎡 Putar Spin Wheel</button></div>'+
    '</div>'+
-   '<div class="card sans"><b>🏆 Daftar Pemenang ('+won.length+')</b>'+
+   '<div class="card sans fs-hide"><b>🏆 Daftar Pemenang ('+won.length+')</b>'+
      (won.map(function(x){ return '<div class="item"><span>#'+x.won+' '+esc(x.name)+'</span><span>🎉</span></div>'; }).join("")||'<div class="mute">Belum ada pemenang.</div>')+
    '</div>';
 
   drawWheel(pool, H.angle);
+  if($("fsbtn")) $("fsbtn").onclick = toggleFS;
 
   $("draw").onclick = function(){
     if(!pool.length || H.busy) return;
@@ -652,7 +727,6 @@ function tabDoor(){
 
     var winIdx = Math.floor(Math.random() * pool.length);
     var step = (Math.PI * 2) / pool.length;
-    // Panah berada di atas (-Math.PI / 2). Hitung sudut akhir agar irisan winIdx tepat di bawah panah
     var targetBase = (-Math.PI / 2) - (winIdx * step + step / 2);
     var extraSpins = (6 + Math.floor(Math.random() * 3)) * Math.PI * 2;
     var startAngle = H.angle;
@@ -682,7 +756,16 @@ function tabDoor(){
   };
 }
 
-// ===== Tukar Kado 1-per-1 =====
+// ===== Tukar Kado 1-per-1 (Organik + Animasi Acak + Fullscreen) =====
+function shuffle(arr){
+  var a = arr.slice();
+  for(var i = a.length - 1; i > 0; i--){
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
+
 function tabKado(){
   var gifts = H.rows.filter(function(x){return x.gift;}).sort(function(a,b){return a.gift_no-b.gift_no;});
   var done = gifts.length >= 2 && gifts.every(function(x){return x.get_no;});
@@ -696,56 +779,80 @@ function tabKado(){
         var isOpen = !!H.rev[cur.id];
         stageHtml =
           '<div class="stage">'+
-            '<div class="mute">Giliran Tukar Kado (membawa kado No. '+cur.gift_no+')</div>'+
-            '<div class="stage-name">🎄 '+esc(cur.name)+'</div>'+
+            '<div class="mute" id="ksub">Giliran Tukar Kado (membawa kado No. '+cur.gift_no+')</div>'+
+            '<div class="stage-name" id="kname">🎄 '+esc(cur.name)+'</div>'+
             '<div class="stage-no" id="kno">'+(isOpen ? "🎁 Kado No. "+cur.get_no : "🎁 No. ?")+'</div>'+
             '<div class="row">'+
               (!isOpen ? '<button class="red" id="open1">✨ Buka Nomor Kado</button>' : '')+
-              (isOpen && unrev.length ? '<button class="pri" id="next1">➡️ Panggil Peserta Berikutnya ('+unrev.length+' tersisa)</button>' : '')+
+              (isOpen && unrev.length ? '<button class="pri" id="next1">🎲 Acak Peserta Berikutnya ('+unrev.length+' tersisa)</button>' : '')+
             '</div>'+
           '</div>';
       }
     } else if(unrev.length){
       stageHtml =
         '<div class="stage">'+
-          '<div class="mute">Pembagian sudah diacak & siap dibuka 1-per-1 ('+unrev.length+' peserta tersisa)</div>'+
-          '<div class="row" style="margin-top:10px"><button class="pri" id="next1">🎤 Panggil Peserta Pertama</button></div>'+
+          '<div class="mute" id="ksub">Pembagian sudah diacak & siap dibuka 1-per-1 ('+unrev.length+' peserta tersisa)</div>'+
+          '<div class="stage-name" id="kname">🎄 Siap Memanggil…</div>'+
+          '<div class="row" style="margin-top:10px"><button class="pri" id="next1">🎲 Acak Peserta Pertama</button></div>'+
         '</div>';
     } else {
-      stageHtml = '<div class="stage"><b>🎉 Semua peserta sudah mendapat kadonya!</b></div>';
+      stageHtml = '<div class="stage"><div class="stage-name">🎉 Semua peserta sudah mendapat kadonya!</div></div>';
     }
+  } else {
+    stageHtml = '<div class="stage"><div class="mute">Kumpulkan minimal 2 peserta pembawa kado lalu klik <b>Acak Pembagian Kado</b> untuk memulai.</div></div>';
   }
 
   $("body").innerHTML =
-   '<div class="card sans"><b>🎁 Tukar Kado (Mode 1-per-1)</b>'+
-     '<div class="mute">Pembawa kado: <b>'+gifts.length+'</b>. Sistem menjamin tiap orang mendapat kado milik orang lain.</div>'+
-     '<div class="row">'+
+   (H.fs ? '<button class="fs-exit sans" id="fsbtn">✕ Keluar Layar Penuh</button>' : '')+
+   '<div class="card sans fs-main">'+
+     '<div class="fs-banner"><h2>🎁 Tukar Kado '+esc(EVENT.title)+'</h2><div class="mute">'+esc(EVENT.org)+'</div></div>'+
+     '<div class="row fs-hide" style="margin-top:0">'+
+       '<div><b>🎁 Tukar Kado (Mode 1-per-1)</b><div class="mute">Pembawa kado: <b>'+gifts.length+'</b>. Acak murni & tidak mungkin dapat kado sendiri.</div></div>'+
+       '<button id="fsbtn" style="flex:none">⛶ Layar Penuh</button>'+
+     '</div>'+
+     '<div class="row fs-hide">'+
        '<button class="red" id="mix"'+(gifts.length<2?" disabled":"")+'>'+(done?"🔀 Acak Ulang Semua":"🔀 Acak Pembagian Kado")+'</button>'+
-       (done ? '<button id="tog">'+(H.showAllKado?"Sembunyikan Daftar":"Lihat Semua")+'</button>' : '')+
      '</div>'+
      stageHtml+
-     '<div style="margin-top:10px">'+
+     '<div class="fs-hide" style="margin-top:10px">'+
      gifts.map(function(x){
-       var show = H.showAllKado || H.rev[x.id];
+       var show = !!H.rev[x.id];
        return '<div class="item"><span>'+esc(x.name)+' <span class="mute">(kado No. '+x.gift_no+')</span></span><b>'+(x.get_no ? (show ? "→ No. "+x.get_no : "🔒") : "")+'</b></div>';
      }).join("")+
      '</div>'+
    '</div>';
 
-  $("mix").onclick = function(){
+  if($("fsbtn")) $("fsbtn").onclick = toggleFS;
+  if($("mix")) $("mix").onclick = function(){
     if(done && !confirm("Acak ulang semua pembagian kado dari awal?")) return;
-    var r = gifts.slice().sort(function(){ return Math.random()-.5; });
-    $("mix").disabled = true; H.rev = {}; H.curKado = null; H.showAllKado = false;
+    var r = shuffle(gifts);
+    $("mix").disabled = true; H.rev = {}; H.curKado = null;
     Promise.all(r.map(function(x,i){ return sb.from("hadir").update({get_no: r[(i+1)%r.length].gift_no}).eq("id", x.id); })).then(load);
   };
-  if($("tog")) $("tog").onclick = function(){ H.showAllKado = !H.showAllKado; tabKado(); };
+
+  // Animasi acak saat memanggil peserta
   if($("next1")) $("next1").onclick = function(){
-    var pick = unrev[Math.floor(Math.random() * unrev.length)];
-    if(pick){ H.curKado = pick.id; tabKado(); }
+    if(!unrev.length || H.busy) return;
+    H.busy = true; $("next1").disabled = true;
+    if($("ksub")) $("ksub").textContent = "Mengacak peserta berikutnya…";
+    if($("kno")) $("kno").textContent = "🎁 No. ?";
+    var n = 0, pick = unrev[Math.floor(Math.random() * unrev.length)];
+    var t = setInterval(function(){
+      var rnd = unrev[Math.floor(Math.random() * unrev.length)];
+      if($("kname")) $("kname").textContent = "🎲 " + rnd.name;
+      if(++n > 15 || unrev.length === 1){
+        clearInterval(t);
+        H.curKado = pick.id;
+        H.busy = false;
+        tabKado();
+      }
+    }, 80);
   };
+
+  // Animasi acak saat membuka nomor kado
   if($("open1")) $("open1").onclick = function(){
     var cur = gifts.filter(function(x){ return x.id === H.curKado; })[0];
-    if(!cur) return;
+    if(!cur || H.busy) return;
     H.busy = true; $("open1").disabled = true;
     var n = 0;
     var t = setInterval(function(){
