@@ -49,6 +49,7 @@ body{
 .snow-wrap{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden}
 .flake{
   position:absolute;top:-20px;color:var(--gold);opacity:.45;user-select:none;
+  will-change:transform;
   animation:fall linear infinite;
 }
 @keyframes fall{
@@ -103,12 +104,13 @@ h1,h2{margin:0 0 6px}
 .bulb{
   width:8px;height:12px;border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;
   margin-top:6px;position:relative;
-  animation:glow 1.6s infinite alternate;
+  will-change:opacity,transform;
+  animation:glow 1.8s infinite alternate;
 }
 .bulb:nth-child(4n+1){background:#e63946;box-shadow:0 0 8px #e63946;animation-delay:0s}
-.bulb:nth-child(4n+2){background:#f4a261;box-shadow:0 0 8px #f4a261;animation-delay:.4s}
-.bulb:nth-child(4n+3){background:#2a9d8f;box-shadow:0 0 8px #2a9d8f;animation-delay:.8s}
-.bulb:nth-child(4n+4){background:#ffd166;box-shadow:0 0 8px #ffd166;animation-delay:1.2s}
+.bulb:nth-child(4n+2){background:#f4a261;box-shadow:0 0 8px #f4a261;animation-delay:.45s}
+.bulb:nth-child(4n+3){background:#2a9d8f;box-shadow:0 0 8px #2a9d8f;animation-delay:.9s}
+.bulb:nth-child(4n+4){background:#ffd166;box-shadow:0 0 8px #ffd166;animation-delay:1.35s}
 @keyframes glow{
   0%{opacity:.45;transform:scale(.92)}
   100%{opacity:1;transform:scale(1.08)}
@@ -344,6 +346,330 @@ textarea{min-height:110px}
 #reader{width:100%;border-radius:12px;overflow:hidden}
 .res{padding:12px;border-radius:12px;background:var(--bg);margin-top:10px;font-family:system-ui,sans-serif}
 .hide{display:none}
+
+/* =========================================
+   CHIC & RESPONSIVE UI — NATAL 2026
+   ========================================= */
+
+:root {
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --shadow-card: 0 8px 28px rgba(0,0,0,.055);
+  --tap-size: 46px;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+button, input, textarea {
+  font-size: 16px;
+}
+
+button {
+  min-height: var(--tap-size);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 960px;
+  padding: clamp(12px, 3vw, 24px);
+}
+
+.card {
+  border-radius: var(--radius-lg);
+  padding: clamp(16px, 3vw, 26px);
+  box-shadow: var(--shadow-card);
+  min-width: 0;
+}
+
+.inv,
+.guide-card {
+  max-width: 540px;
+  width: 100%;
+  margin-inline: auto;
+}
+
+.inv {
+  padding-top: 38px;
+}
+
+.inv h1 {
+  font-size: clamp(25px, 6vw, 34px);
+  overflow-wrap: anywhere;
+}
+
+.inv .name {
+  font-size: clamp(21px, 5vw, 28px);
+  overflow-wrap: anywhere;
+}
+
+.verse {
+  max-width: 100%;
+}
+
+.details {
+  width: 100%;
+}
+
+.detail-row {
+  min-width: 0;
+}
+
+.detail-row > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Panel navigasi */
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  overflow: visible;
+}
+
+.tabs button {
+  min-width: 0;
+  padding: 10px 6px;
+  font-weight: 600;
+  border-radius: 12px;
+}
+
+/* Form dan tombol */
+.row {
+  gap: 10px;
+}
+
+.row > * {
+  min-width: 0;
+}
+
+input, textarea {
+  min-width: 0;
+  border-radius: 12px;
+}
+
+textarea {
+  resize: vertical;
+}
+
+button {
+  border-radius: 12px;
+  font-weight: 600;
+  transition: background .2s ease, transform .15s ease;
+}
+
+button:active {
+  transform: scale(.97);
+}
+
+/* Daftar tamu */
+.item {
+  gap: 12px;
+  padding: 12px 0;
+  align-items: center;
+}
+
+.item > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.item .btns {
+  flex-wrap: wrap;
+}
+
+.item button {
+  min-height: 38px;
+}
+
+/* Hasil scan */
+.res {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+/* QR */
+#qr {
+  max-width: 100%;
+}
+
+#qr img,
+#qr canvas {
+  max-width: 100%;
+  height: auto !important;
+}
+
+/* Scanner */
+#reader {
+  max-width: 100%;
+}
+
+#reader video {
+  max-width: 100% !important;
+  object-fit: cover;
+}
+
+/* Roda undian */
+.wheel-box {
+  width: min(82vw, 340px);
+  height: auto;
+  aspect-ratio: 1;
+}
+
+#wheel {
+  width: 100%;
+  height: 100%;
+}
+
+/* Mode fullscreen */
+body.fs-mode {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding:
+    max(12px, env(safe-area-inset-top))
+    max(12px, env(safe-area-inset-right))
+    max(12px, env(safe-area-inset-bottom))
+    max(12px, env(safe-area-inset-left));
+}
+
+body.fs-mode .wheel-box {
+  width: min(62vh, 450px, 78vw);
+  height: auto;
+  aspect-ratio: 1;
+}
+
+.fs-exit {
+  min-height: 44px;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+}
+
+.stage {
+  overflow-wrap: anywhere;
+}
+
+.stage-name {
+  font-size: clamp(22px, 5vw, 40px);
+}
+
+/* Tablet */
+@media (min-width: 600px) {
+  .wrap {
+    padding: 24px;
+  }
+
+  .tabs {
+    gap: 12px;
+  }
+
+  .tabs button {
+    padding: 12px;
+  }
+
+  .wheel-box {
+    width: min(50vw, 390px);
+  }
+
+  .card {
+    margin-bottom: 18px;
+  }
+
+  .stat {
+    gap: 14px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 900px) {
+  .wrap {
+    max-width: 1000px;
+  }
+
+  .inv,
+  .guide-card {
+    max-width: 560px;
+  }
+
+  .wheel-box {
+    width: 390px;
+  }
+
+  .item {
+    padding: 14px 4px;
+  }
+}
+
+/* HP kecil */
+@media (max-width: 380px) {
+  .wrap {
+    padding: 10px;
+  }
+
+  .card {
+    padding: 15px 13px;
+    border-radius: 15px;
+  }
+
+  .tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .item .btns {
+    width: 100%;
+  }
+
+  .item .btns button {
+    flex: 1;
+  }
+
+  .wheel-box {
+    width: min(78vw, 290px);
+  }
+
+  .details {
+    padding: 12px;
+  }
+}
+
+/* Kurangi animasi bagi pengguna yang membutuhkan */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+
+  .snow-wrap {
+    display: none !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -370,20 +696,28 @@ var $ = function(id){ return document.getElementById(id); };
 var esc = function(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); };
 var slugify = function(n){ return n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""); };
 var niceName = function(s){ return s.split("-").filter(Boolean).map(function(w){ return w.charAt(0).toUpperCase()+w.slice(1); }).join(" "); };
-var sb = null, H = {rows:[], tamu:[], tab:"undangan", scanner:null, last:null, poll:null, busy:false, angle:0, rev:{}, curKado:null, fs:false};
+var sb = null;
+var H = {
+  rows:[], tamu:[], tab:"undangan",
+  scanner:null, scanning:false, last:null,
+  poll:null, busy:false, loading:false,
+  angle:0, rev:{}, curKado:null, fs:false
+};
 try{ sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }catch(e){}
 
 function setSnow(on){
   var el = $("snow");
-  if(!on){ el.innerHTML = ""; return; }
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(!on || reduce){ el.innerHTML = ""; return; }
   if(el.children.length) return;
   var icons = ["❄","✦","❅","✨","•"];
+  var count = window.innerWidth < 600 ? 12 : 18;
   var html = "";
-  for(var i=0;i<22;i++){
-    var left = (i * 4.7) % 100;
-    var dur = 7 + (i % 6) * 1.8;
-    var delay = -(i * 0.9);
-    var size = 10 + (i % 4) * 4;
+  for(var i=0;i<count;i++){
+    var left = (i * (100 / count)) % 100;
+    var dur = 8 + (i % 5) * 2;
+    var delay = -(i * 1.1);
+    var size = 10 + (i % 3) * 4;
     html += '<span class="flake" style="left:'+left+'%;animation-duration:'+dur+'s;animation-delay:'+delay+'s;font-size:'+size+'px">'+icons[i%icons.length]+'</span>';
   }
   el.innerHTML = html;
@@ -415,9 +749,12 @@ document.addEventListener("fullscreenchange", function(){
     refresh();
   }
 });
+document.addEventListener("visibilitychange", function(){
+  if(!document.hidden && H.poll) load();
+});
 
 function route(){
-  stopScan(); clearInterval(H.poll); exitFS();
+  stopScan(); clearInterval(H.poll); H.poll = null; exitFS();
   var h = decodeURIComponent(location.hash.replace("#",""));
   if(!h || h === "panitia"){ setSnow(false); return gate(); }
   setSnow(true);
@@ -473,23 +810,44 @@ function gate(){
   if(!sb){ app.innerHTML = '<div class="card sans">Isi SUPABASE_URL dan SUPABASE_ANON_KEY di index.html.</div>'; return; }
   sb.auth.getSession().then(function(r){
     if(r.data.session) return panel();
-    app.innerHTML = '<div class="card sans"><h2>🎄 Login Panitia</h2><div class="row"><input id="em" type="email" placeholder="Email"></div>'+
+    app.innerHTML = '<div class="card sans" style="max-width:440px;margin-inline:auto"><h2>🎄 Login Panitia</h2><div class="row"><input id="em" type="email" placeholder="Email"></div>'+
      '<div class="row"><input id="pw" type="password" placeholder="Password"></div><div class="row"><button class="pri" id="login">Masuk</button></div><div id="err" class="mute"></div></div>';
     $("login").onclick = function(){
+      $("login").disabled = true;
       sb.auth.signInWithPassword({email:$("em").value.trim(), password:$("pw").value}).then(function(r){
+        $("login").disabled = false;
         if(r.error) $("err").textContent = "Login gagal: "+r.error.message; else panel();
       });
     };
   });
 }
 
-// ===== Data =====
+// ===== Data (Optimasi Polling & Diff Check) =====
 function load(){
-  return Promise.all([sb.from("hadir").select("*").order("at"), sb.from("tamu").select("*").order("created_at")]).then(function(rs){
-    if(rs[0].error || rs[1].error){ var n=$("dbnote"); if(n) n.textContent="Gagal memuat data: "+(rs[0].error||rs[1].error).message; return; }
-    H.rows = rs[0].data || []; H.tamu = rs[1].data || []; refresh();
+  if(!sb || H.loading || document.hidden) return Promise.resolve();
+  H.loading = true;
+  return Promise.all([
+    sb.from("hadir").select("*").order("at"),
+    sb.from("tamu").select("*").order("created_at")
+  ]).then(function(rs){
+    if(rs[0].error || rs[1].error){
+      var n = $("dbnote");
+      if(n) n.textContent = "Gagal memuat data: " + (rs[0].error || rs[1].error).message;
+      return;
+    }
+    var rows = rs[0].data || [];
+    var tamu = rs[1].data || [];
+    var changed = JSON.stringify(rows) !== JSON.stringify(H.rows) || JSON.stringify(tamu) !== JSON.stringify(H.tamu);
+    H.rows = rows;
+    H.tamu = tamu;
+    if(changed) refresh();
+  }).catch(function(err){
+    console.error("Supabase load error:", err);
+  }).finally(function(){
+    H.loading = false;
   });
 }
+
 function refresh(){
   if(H.tab==="scan") stats();
   else if(H.tab==="undangan") renderTamu();
@@ -506,12 +864,13 @@ function panel(){
   if(H.tab !== "doorprize" && H.tab !== "kado") exitFS();
   app.innerHTML = '<div class="fs-hide"><h2>🎄 Panel Panitia</h2><div class="mute sans" style="margin-bottom:10px">'+esc(EVENT.title)+' — '+esc(EVENT.org)+' · <a href="#" id="out" style="color:var(--accent)">keluar</a></div>'+
    '<div class="tabs sans" id="tabs"></div></div><div id="body"></div>';
-  $("out").onclick = function(e){ e.preventDefault(); exitFS(); sb.auth.signOut().then(gate); };
+  $("out").onclick = function(e){ e.preventDefault(); stopScan(); clearInterval(H.poll); H.poll = null; exitFS(); sb.auth.signOut().then(gate); };
   var tabs = [["undangan","Undangan"],["scan","Scan"],["doorprize","Doorprize"],["kado","Kado"]];
   $("tabs").innerHTML = tabs.map(function(t){ return '<button data-t="'+t[0]+'" class="'+(H.tab===t[0]?"on":"")+'">'+t[1]+'</button>'; }).join("");
-  $("tabs").onclick = function(e){ var t = e.target.dataset.t; if(t){ stopScan(); exitFS(); H.tab = t; panel(); } };
+  $("tabs").onclick = function(e){ var t = e.target.dataset.t; if(t && t !== H.tab){ stopScan(); exitFS(); H.tab = t; panel(); } };
   ({undangan:tabUndangan, scan:tabScan, doorprize:tabDoor, kado:tabKado})[H.tab]();
-  load(); H.poll = setInterval(load, 5000);
+  load();
+  H.poll = setInterval(load, 10000);
 }
 
 // ===== Daftar tamu & kirim WhatsApp (Fonnte) =====
@@ -573,7 +932,9 @@ function saveTamu(){
   });
   var arr = Object.keys(map).map(function(k){ return map[k]; });
   if(!arr.length){ $("gmsg").textContent = "Belum ada nama."; return; }
+  $("gen").disabled = true;
   sb.from("tamu").upsert(arr).then(function(r){
+    $("gen").disabled = false;
     if(r.error){ $("gmsg").textContent = "Gagal menyimpan: "+r.error.message; return; }
     $("gmsg").textContent = arr.length+" tamu tersimpan."; $("names").value = ""; load();
   });
@@ -592,7 +953,7 @@ function sendTamu(list){
   });
 }
 
-// ===== Scan & Validasi Tamu Terdaftar =====
+// ===== Scan & Validasi Tamu Terdaftar (Lifecycle Kamera Aman) =====
 function tabScan(){
   $("body").innerHTML =
    '<div class="stat card sans" id="stats"></div><div class="card sans"><div id="dbnote" class="mute"></div><div id="reader"></div>'+
@@ -603,16 +964,37 @@ function tabScan(){
   $("go").onclick = function(){ var v = slugify($("man").value); if(v) checkin(v); $("man").value=""; };
 }
 function startScan(){
+  if(H.scanner || H.scanning) return;
+  H.scanning = true;
+  if($("start")) $("start").disabled = true;
   try{
-    H.scanner = new Html5Qrcode("reader");
-    H.scanner.start({facingMode:"environment"},{fps:10,qrbox:220},function(txt){
+    var s = new Html5Qrcode("reader");
+    H.scanner = s;
+    s.start({facingMode:"environment"},{fps:10,qrbox:220},function(txt){
       if(H.last === txt) return; H.last = txt; setTimeout(function(){ H.last=null; }, 3000);
       checkin(slugify(txt.split("#").pop()));
-    }).then(function(){ $("start").classList.add("hide"); $("stop").classList.remove("hide"); })
-      .catch(function(){ $("res").innerHTML = '<div class="res">Kamera tidak bisa dibuka (butuh HTTPS & izin kamera). Pakai input manual.</div>'; });
-  }catch(e){}
+    }).then(function(){
+      H.scanning = false;
+      if($("start")){ $("start").disabled = false; $("start").classList.add("hide"); }
+      if($("stop")) $("stop").classList.remove("hide");
+    }).catch(function(){
+      H.scanning = false; H.scanner = null;
+      if($("start")) $("start").disabled = false;
+      if($("res")) $("res").innerHTML = '<div class="res">Kamera tidak bisa dibuka (butuh HTTPS & izin kamera). Pakai input manual.</div>';
+    });
+  }catch(e){
+    H.scanning = false; H.scanner = null;
+    if($("start")) $("start").disabled = false;
+  }
 }
-function stopScan(){ if(H.scanner){ var s = H.scanner; H.scanner = null; try{ s.stop().then(function(){ s.clear(); }).catch(function(){}); }catch(e){} } }
+function stopScan(){
+  if(H.scanner){
+    var s = H.scanner; H.scanner = null; H.scanning = false;
+    try{ s.stop().then(function(){ s.clear(); }).catch(function(){}); }catch(e){}
+  }
+  if($("start")){ $("start").disabled = false; $("start").classList.remove("hide"); }
+  if($("stop")) $("stop").classList.add("hide");
+}
 
 function checkin(slug){
   if(!slug) return;
@@ -639,9 +1021,10 @@ function showRes(rec, dup){
    '<div class="mute" id="gs">'+(rec.gift?"Kado No. "+rec.gift_no:"Otomatis masuk undian doorprize.")+'</div>'+
    (rec.gift?'':'<div class="row"><button class="pri" id="gift">🎁 Bawa kado</button></div>')+'</div>';
   var g = $("gift"); if(g) g.onclick = function(){
+    g.disabled = true;
     var no = H.rows.reduce(function(m,x){return Math.max(m, x.gift_no||0);},0)+1;
     sb.from("hadir").update({gift:true, gift_no:no}).eq("id", rec.id).then(function(r){
-      if(r.error) return;
+      if(r.error){ g.disabled = false; return; }
       rec.gift = true; rec.gift_no = no; stats(); $("gs").textContent = "Kado No. "+no+" — tempel nomor ini pada kado."; g.remove();
     });
   };
@@ -824,10 +1207,13 @@ function tabKado(){
 
   if($("fsbtn")) $("fsbtn").onclick = toggleFS;
   if($("mix")) $("mix").onclick = function(){
+    if(H.busy) return;
     if(done && !confirm("Acak ulang semua pembagian kado dari awal?")) return;
+    H.busy = true;
     var r = shuffle(gifts);
     $("mix").disabled = true; H.rev = {}; H.curKado = null;
-    Promise.all(r.map(function(x,i){ return sb.from("hadir").update({get_no: r[(i+1)%r.length].gift_no}).eq("id", x.id); })).then(load);
+    Promise.all(r.map(function(x,i){ return sb.from("hadir").update({get_no: r[(i+1)%r.length].gift_no}).eq("id", x.id); }))
+      .finally(function(){ H.busy = false; load(); });
   };
 
   // Animasi acak saat memanggil peserta
